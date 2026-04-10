@@ -27,7 +27,7 @@ const categoryColors: Record<string, string> = {
   Other:       '#94A3B8',
 };
 
-export default function SkillsSection({ grouped }: { grouped: Record<string, Skill[]> }) {
+export default function SkillsSection({ grouped, config }: { grouped: Record<string, Skill[]>, config?: any }) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -45,8 +45,8 @@ export default function SkillsSection({ grouped }: { grouped: Record<string, Ski
     <section id="skills" className="section" ref={ref}>
       <div className="container">
         <div className="section-header">
-          <span className="section-tag fade-in">Skills & Tech Stack</span>
-          <h2 className="section-title fade-in delay-1">What I Work With</h2>
+          <span className="section-tag fade-in">{config?.title || "Skills & Tech Stack"}</span>
+          <h2 className="section-title fade-in delay-1">{config?.subtitle || "What I Work With"}</h2>
           <p className="section-desc fade-in delay-2">
             Tools, frameworks, and technologies I use to build quality software.
           </p>

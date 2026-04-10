@@ -12,7 +12,7 @@ interface Project {
   featured: boolean;
 }
 
-export default function ProjectsSection({ projects }: { projects: Project[] }) {
+export default function ProjectsSection({ projects, config }: { projects: Project[], config?: any }) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -28,8 +28,8 @@ export default function ProjectsSection({ projects }: { projects: Project[] }) {
     <section id="projects" className="section" ref={ref}>
       <div className="container">
         <div className="section-header">
-          <span className="section-tag fade-in">Work</span>
-          <h2 className="section-title fade-in delay-1">Projects</h2>
+          <span className="section-tag fade-in">{config?.title || "Work"}</span>
+          <h2 className="section-title fade-in delay-1">{config?.subtitle || "Projects"}</h2>
           <p className="section-desc fade-in delay-2">
             Automation frameworks, test suites, and QA tools I&apos;ve built.
           </p>
