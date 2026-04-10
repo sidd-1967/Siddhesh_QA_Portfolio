@@ -1,28 +1,31 @@
 import { Router } from 'express';
 import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
+import { v2 as cloudinary } from 'cloudinary';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import { authMiddleware } from '../middleware/auth.middleware';
 import { asyncHandler } from '../utils/asyncHandler';
+import { config } from '../config/config';
 
 const router = Router();
 
-// Ensure upload directory exists
-const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: config.cloudinary.cloudName,
+  api_key: config.cloudinary.apiKey,
+  api_secret: config.cloudinary.apiSecret,
+});
 
-// Set up storage
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (_req, file, cb) => {
-    // Unique name: timestamp + original extension
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
-  },
+// Set up Cloudinary Storage for Multer
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'qa_portfolio_uploads',
+    allowed_formats: ['png'],
+    public_id: (_req: any, file: any) => {
+      const name = file.originalname.split('.')[0];
+      return `${Date.now()}-${name}`;
+    },
+  } as any,
 });
 
 // Filter for PNG files only as requested by user
@@ -48,8 +51,8 @@ router.post('/', authMiddleware, upload.single('file'), asyncHandler(async (req,
     return;
   }
 
-  // Return the relative URL
-  const fileUrl = `/uploads/${req.file.filename}`;
+  // With Cloudinary, path/filename is the secure_url
+  const fileUrl = (req.file as any).path;
   res.json({ success: true, data: { url: fileUrl } });
 }));
 

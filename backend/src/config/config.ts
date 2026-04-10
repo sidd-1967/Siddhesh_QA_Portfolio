@@ -44,6 +44,13 @@ export const config = {
     },
   },
 
+  // Cloudinary
+  cloudinary: {
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME || '',
+    apiKey: process.env.CLOUDINARY_API_KEY || '',
+    apiSecret: process.env.CLOUDINARY_API_SECRET || '',
+  },
+
   // Email / Nodemailer (optional for contact form)
   email: {
     host: process.env.EMAIL_HOST || '',
