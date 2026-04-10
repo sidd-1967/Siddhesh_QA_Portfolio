@@ -6,7 +6,7 @@ import { AppConfig } from '@/config/app.config';
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export async function generateMetadata(): Promise<Metadata> {
-  let name = AppConfig.app.name;
+  let name: string = AppConfig.app.name;
   try {
     const res = await fetch(`${AppConfig.apiBaseUrl}/api/profile`, { next: { revalidate: 3600 } });
     if (res.ok) {
