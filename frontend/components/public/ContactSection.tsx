@@ -23,7 +23,7 @@ declare global {
   }
 }
 
-export default function ContactSection({ profile }: { profile: Profile | null }) {
+export default function ContactSection({ profile, config }: { profile: Profile | null, config?: any }) {
   const ref = useRef<HTMLElement>(null);
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
