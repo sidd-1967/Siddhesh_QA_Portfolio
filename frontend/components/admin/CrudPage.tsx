@@ -9,7 +9,7 @@ interface Column<T> {
 
 interface Props<T extends { _id: string }> {
   title: string;
-  fetchFn: (params: { page: number, limit: number, search: string }) => Promise<{ data: { data: T[], total: number } }>;
+  fetchFn: (params: { page: number, limit: number, search: string }) => Promise<{ data: { data: T[], total?: number } }>;
   createFn: (data: Partial<T>) => Promise<unknown>;
   updateFn: (id: string, data: Partial<T>) => Promise<unknown>;
   deleteFn: (id: string) => Promise<unknown>;

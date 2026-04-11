@@ -1,9 +1,8 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+// Font optimization removed to prevent Google Fonts API fetch timeout errors during build.
+// Fonts are loaded via standard link tags below instead.
 import './globals.css';
 import { AppConfig } from '@/config/app.config';
-
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export async function generateMetadata(): Promise<Metadata> {
   let name: string = AppConfig.app.name;
@@ -41,7 +40,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
