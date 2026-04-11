@@ -4,7 +4,7 @@ import { AppConfig } from '@/config/app.config';
 // ── Axios instance wired to the backend API ───────────────────────────
 const api = axios.create({
   baseURL: AppConfig.apiBaseUrl,
-  timeout: 15000,
+  timeout: 60000,
   headers: { 'Content-Type': 'application/json' },
 });
 
