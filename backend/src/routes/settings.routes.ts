@@ -26,4 +26,26 @@ router.put('/', authMiddleware, asyncHandler(async (req, res) => {
   res.json({ success: true, data: settings });
 }));
 
+// GET email template (admin)
+router.get('/email-template', authMiddleware, asyncHandler(async (_req, res) => {
+  let settings = await Settings.findOne().select('emailTemplate');
+  if (!settings) {
+    settings = await Settings.create({});
+  }
+  res.json({ success: true, data: settings.emailTemplate });
+}));
+
+// UPDATE email template (admin)
+router.patch('/email-template', authMiddleware, asyncHandler(async (req, res) => {
+  const { subject, body } = req.body;
+  let settings = await Settings.findOne();
+  if (!settings) {
+    settings = await Settings.create({ emailTemplate: { subject, body } });
+  } else {
+    settings.emailTemplate = { subject, body };
+    await settings.save();
+  }
+  res.json({ success: true, data: settings.emailTemplate });
+}));
+
 export default router;

@@ -86,23 +86,25 @@ export default function ContactSection({ profile, config }: { profile: Profile |
     }
   };
 
+  const { title, subtitle, description, infoTitle, infoText } = config || {};
+
   return (
     <section id="contact" className="section" ref={ref}>
       <div className="container">
         <div className="section-header">
-          <span className="section-tag fade-in">Get In Touch</span>
-          <h2 className="section-title fade-in delay-1">Contact Me</h2>
+          <span className="section-tag fade-in">{subtitle || 'Get In Touch'}</span>
+          <h2 className="section-title fade-in delay-1">{title || 'Contact Me'}</h2>
           <p className="section-desc fade-in delay-2">
-            Have a project in mind or want to discuss QA? I&apos;d love to hear from you.
+            {description || 'Have a project in mind or want to discuss QA? I\'d love to hear from you.'}
           </p>
         </div>
 
         <div className="contact-grid">
           {/* Info */}
           <div className="contact-info fade-in delay-1">
-            <h3 className="contact-info-title">Let&apos;s Connect</h3>
+            <h3 className="contact-info-title">{infoTitle || 'Let\'s Connect'}</h3>
             <p className="contact-info-text">
-              Feel free to reach out for collaboration, job opportunities, or just to say hi!
+              {infoText || 'Feel free to reach out for collaboration, job opportunities, or just to say hi!'}
             </p>
 
             <div className="contact-methods">

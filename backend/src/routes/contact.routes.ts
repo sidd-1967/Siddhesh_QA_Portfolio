@@ -56,19 +56,45 @@ router.post(
         auth: { user: config.email.user, pass: config.email.pass },
       });
 
+      // Get custom template from DB or use default
+      const { Settings } = await import('../models/Settings');
+      const settings = await Settings.findOne().select('emailTemplate');
+      
+      let emailSubject = `[Portfolio Contact] ${subject}`;
+      let emailContent = `
+        <h2>New Contact Form Submission</h2>
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Subject:</strong> ${subject}</p>
+        <p><strong>Message:</strong></p>
+        <p>${message.replace(/\n/g, '<br>')}</p>
+      `;
+
+      if (settings?.emailTemplate) {
+        const { subject: templateSub, body: templateBody } = settings.emailTemplate;
+        
+        const placeholders: Record<string, string> = {
+          name,
+          email,
+          subject,
+          message: message.replace(/\n/g, '<br>'),
+          year: new Date().getFullYear().toString(),
+        };
+
+        const replacePlaceholders = (str: string) => {
+          return str.replace(/\{\{(\w+)\}\}/g, (_, key) => placeholders[key] || '');
+        };
+
+        emailSubject = replacePlaceholders(templateSub);
+        emailContent = replacePlaceholders(templateBody);
+      }
+
       await transporter.sendMail({
         from: `"Portfolio Contact" <${config.email.from}>`,
         to: config.email.to,
         replyTo: email,
-        subject: `[Portfolio Contact] ${subject}`,
-        html: `
-          <h2>New Contact Form Submission</h2>
-          <p><strong>Name:</strong> ${name}</p>
-          <p><strong>Email:</strong> ${email}</p>
-          <p><strong>Subject:</strong> ${subject}</p>
-          <p><strong>Message:</strong></p>
-          <p>${message.replace(/\n/g, '<br>')}</p>
-        `,
+        subject: emailSubject,
+        html: emailContent,
       });
     }
 

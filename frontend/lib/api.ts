@@ -82,6 +82,8 @@ export const adminAPI = {
   // Settings / Config
   getSettings: () => api.get('/api/admin/settings'),
   updateSettings: (data: unknown) => api.put('/api/admin/settings', data),
+  getEmailTemplate: () => api.get('/api/admin/settings/email-template'),
+  updateEmailTemplate: (data: { subject: string; body: string }) => api.patch('/api/admin/settings/email-template', data),
 
   // Profile
   getProfile: () => api.get(adminUrl('profile')),

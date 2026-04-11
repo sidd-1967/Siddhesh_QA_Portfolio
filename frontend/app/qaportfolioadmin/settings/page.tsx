@@ -68,7 +68,7 @@ export default function AdminSettingsPage() {
     }
   };
 
-  const updateHeader = (section: string, field: 'title' | 'subtitle', val: string) => {
+  const updateHeader = (section: string, field: 'title' | 'subtitle' | 'description' | 'infoTitle' | 'infoText', val: string) => {
     setConfig({
       ...config,
       sectionHeaders: {
@@ -102,7 +102,7 @@ export default function AdminSettingsPage() {
             <h2 className="section-title-sm">Section Titles & Subtitles</h2>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
               {config && Object.entries(config.sectionHeaders).map(([key, header]: [string, any]) => (
-                <div key={key} className="config-group">
+                <div key={key} className="config-group" style={{ marginBottom: key === 'contact' ? '1.5rem' : '0' }}>
                   <label className="config-label">{key.charAt(0).toUpperCase() + key.slice(1)} Section</label>
                   <input
                     className="form-input"
@@ -116,7 +116,35 @@ export default function AdminSettingsPage() {
                     value={header.subtitle}
                     onChange={(e) => updateHeader(key, 'subtitle', e.target.value)}
                     placeholder="Subtitle"
+                    style={{ marginBottom: key === 'contact' ? '0.5rem' : '0' }}
                   />
+                  {key === 'contact' && (
+                    <>
+                      <textarea
+                        className="form-textarea"
+                        value={header.description || ''}
+                        onChange={(e) => updateHeader(key, 'description', e.target.value)}
+                        placeholder="Section Description"
+                        rows={2}
+                        style={{ marginBottom: '0.5rem', fontSize: '0.85rem' }}
+                      />
+                      <input
+                        className="form-input"
+                        value={header.infoTitle || ''}
+                        onChange={(e) => updateHeader(key, 'infoTitle', e.target.value)}
+                        placeholder="Info Card Title (e.g. Let's Connect)"
+                        style={{ marginBottom: '0.5rem' }}
+                      />
+                      <textarea
+                        className="form-textarea"
+                        value={header.infoText || ''}
+                        onChange={(e) => updateHeader(key, 'infoText', e.target.value)}
+                        placeholder="Info Card Text"
+                        rows={2}
+                        style={{ fontSize: '0.85rem' }}
+                      />
+                    </>
+                  )}
                 </div>
               ))}
             </div>
