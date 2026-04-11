@@ -47,8 +47,8 @@ export default function CrudPage<T extends { _id: string }>({
   const [totalItems, setTotalItems] = useState(0);
   const limit = 10;
 
-  const fetch = useCallback(async () => {
-    setLoading(true);
+  const loadData = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const res = await fetchFn({ page: currentPage, limit, search: searchTerm });
       setItems(res.data.data);
@@ -56,17 +56,17 @@ export default function CrudPage<T extends { _id: string }>({
     } catch {
       showToast('error', 'Failed to load data');
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [fetchFn, currentPage, searchTerm]);
 
   useEffect(() => {
     // Debounce search
     const timer = setTimeout(() => {
-      fetch();
+      loadData(false);
     }, 400);
     return () => clearTimeout(timer);
-  }, [fetch]);
+  }, [loadData]);
 
   const showToast = (type: 'success' | 'error', msg: string) => {
     setToast({ type, msg });
@@ -79,7 +79,7 @@ export default function CrudPage<T extends { _id: string }>({
       await createFn(data);
       showToast('success', 'Created successfully!');
       setModal(null);
-      await fetch();
+      await loadData(true);
     } catch (err: unknown) {
       const e = err as { response?: { data?: { message?: string } } };
       showToast('error', e?.response?.data?.message || 'Create failed');
@@ -96,7 +96,7 @@ export default function CrudPage<T extends { _id: string }>({
       showToast('success', 'Updated successfully!');
       setModal(null);
       setSelected(null);
-      await fetch();
+      await loadData(true);
     } catch (err: unknown) {
       const e = err as { response?: { data?: { message?: string } } };
       showToast('error', e?.response?.data?.message || 'Update failed');
@@ -110,7 +110,7 @@ export default function CrudPage<T extends { _id: string }>({
       await deleteFn(id);
       showToast('success', 'Deleted successfully!');
       setDeleteConfirm(null);
-      await fetch();
+      await loadData(true);
     } catch {
       showToast('error', 'Delete failed');
     }
