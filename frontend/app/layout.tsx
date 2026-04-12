@@ -27,6 +27,9 @@ export async function generateMetadata(): Promise<Metadata> {
       'QA Engineer', 'Test Automation', 'Selenium', 'Cypress', 'Playwright',
       'Software Testing', 'ISTQB', 'API Testing', 'Portfolio', 'Quality Assurance'
     ],
+    icons: {
+      icon: '/icon.svg',
+    },
     openGraph: {
       title: name,
       description: AppConfig.app.description,

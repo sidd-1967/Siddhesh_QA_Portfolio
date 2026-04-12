@@ -36,7 +36,7 @@ export default async function PortfolioPage() {
 
   return (
     <>
-      <NavBar profile={profile} />
+      <NavBar profile={profile as any} config={config} />
       <main>
         {config.hero?.enabled !== false && <HeroSection profile={profile as any} config={config.hero} />}
         {config.about?.enabled !== false && (

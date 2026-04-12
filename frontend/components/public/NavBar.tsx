@@ -1,17 +1,16 @@
 'use client';
 import { useState, useEffect } from 'react';
 
-const navLinks = [
-  { label: 'About', href: '#about' },
-  { label: 'Skills', href: '#skills' },
-  { label: 'Experience', href: '#experience' },
-  { label: 'Projects', href: '#projects' },
-  { label: 'Education', href: '#education' },
-  { label: 'Certifications', href: '#certifications' },
-  { label: 'Contact', href: '#contact' },
-];
-
-export default function NavBar({ profile }: { profile: any }) {
+export default function NavBar({ profile, config }: { profile: any, config?: any }) {
+  const navLinks = [
+    ...(config?.about?.enabled !== false ? [{ label: 'About', href: '#about' }] : []),
+    ...(config?.skills?.enabled !== false ? [{ label: 'Skills', href: '#skills' }] : []),
+    ...(config?.experience?.enabled !== false ? [{ label: 'Experience', href: '#experience' }] : []),
+    ...(config?.projects?.enabled !== false ? [{ label: 'Projects', href: '#projects' }] : []),
+    ...(config?.education?.enabled !== false ? [{ label: 'Education', href: '#education' }] : []),
+    ...(config?.certifications?.enabled !== false ? [{ label: 'Certifications', href: '#certifications' }] : []),
+    ...(config?.contact?.enabled !== false ? [{ label: 'Contact', href: '#contact' }] : []),
+  ];
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('');
@@ -58,6 +57,7 @@ export default function NavBar({ profile }: { profile: any }) {
   };
 
   return (
+    <>
     <nav className={`navbar${scrolled ? ' navbar-scrolled' : ''}`}>
       <div className="container navbar-inner">
         <a href="#hero" className="navbar-logo" onClick={handleLogoClick}>
@@ -96,8 +96,9 @@ export default function NavBar({ profile }: { profile: any }) {
           <span className="hamburger-line" />
         </button>
       </div>
+    </nav>
 
-      {/* Mobile sidebar/drawer menu */}
+    {/* Mobile sidebar/drawer menu */}
       <div className={`mobile-sidebar${menuOpen ? ' open' : ''}`}>
         <div className="mobile-sidebar-header">
           <a href="#hero" className="navbar-logo" onClick={handleLogoClick}>
@@ -213,9 +214,7 @@ export default function NavBar({ profile }: { profile: any }) {
           position: fixed;
           top: 0; right: 0; bottom: 0;
           width: min(400px, 85vw);
-          background: rgba(10, 15, 30, 0.95);
-          backdrop-filter: blur(25px);
-          -webkit-backdrop-filter: blur(25px);
+          background: #080c17; /* Solid fallback to prevent bugs on scroll */
           z-index: 1001;
           padding: 2rem;
           display: flex;
@@ -297,6 +296,6 @@ export default function NavBar({ profile }: { profile: any }) {
           .mobile-sidebar { width: 100%; border-left: none; }
         }
       `}</style>
-    </nav>
+    </>
   );
 }
