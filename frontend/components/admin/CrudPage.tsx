@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
+import { adminAPI } from '@/lib/api';
 
 interface Column<T> {
   key: keyof T | string;
@@ -21,6 +22,7 @@ interface Props<T extends { _id: string }> {
     loading: boolean;
   }>;
   emptyMessage?: string;
+  sectionKey?: string;
 }
 
 export default function CrudPage<T extends { _id: string }>({
@@ -32,6 +34,7 @@ export default function CrudPage<T extends { _id: string }>({
   columns,
   FormComponent,
   emptyMessage = 'No items yet. Add one!',
+  sectionKey,
 }: Props<T>) {
   const [items, setItems] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,6 +49,41 @@ export default function CrudPage<T extends { _id: string }>({
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const limit = 10;
+  
+  // Section Visibility state
+  const [sectionEnabled, setSectionEnabled] = useState<boolean | null>(null);
+  const [toggling, setToggling] = useState(false);
+
+  useEffect(() => {
+    if (sectionKey) {
+      adminAPI.getSettings().then(res => {
+        const config = res.data.data.sectionHeaders[sectionKey];
+        if (config) {
+          setSectionEnabled(config.enabled !== false);
+        }
+      }).catch(() => {});
+    }
+  }, [sectionKey]);
+
+  const handleToggleSection = async () => {
+    if (!sectionKey || sectionEnabled === null) return;
+    setToggling(true);
+    try {
+      const res = await adminAPI.getSettings();
+      const currentConfig = res.data.data;
+      if (!currentConfig.sectionHeaders[sectionKey]) {
+        currentConfig.sectionHeaders[sectionKey] = { title: title, subtitle: '' };
+      }
+      currentConfig.sectionHeaders[sectionKey].enabled = !sectionEnabled;
+      await adminAPI.updateSettings(currentConfig);
+      setSectionEnabled(!sectionEnabled);
+      showToast('success', `${title} section ${!sectionEnabled ? 'enabled' : 'disabled'} successfully!`);
+    } catch {
+      showToast('error', 'Failed to toggle section visibility');
+    } finally {
+      setToggling(false);
+    }
+  };
 
   const loadData = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
@@ -136,6 +174,18 @@ export default function CrudPage<T extends { _id: string }>({
       <div className="crud-header">
         <h1 className="crud-title">{title}</h1>
         <div className="crud-header-actions">
+          {sectionKey && sectionEnabled !== null && (
+            <label className="toggle-switch" style={{ marginRight: '1rem' }} title={`Toggle ${title} section on website`}>
+              <input 
+                type="checkbox" 
+                checked={sectionEnabled} 
+                onChange={handleToggleSection} 
+                disabled={toggling} 
+              />
+              <div className="toggle-slider"></div>
+              <span className="toggle-label-text">Visible</span>
+            </label>
+          )}
           <div className="search-box">
             <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>

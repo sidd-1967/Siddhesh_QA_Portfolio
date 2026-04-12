@@ -31,6 +31,7 @@ export default function AdminEducationPage() {
       ]}
       FormComponent={EducationForm as Parameters<typeof CrudPage<Education>>[0]['FormComponent']}
       emptyMessage="No education entries yet."
+      sectionKey="education"
     />
   );
 }

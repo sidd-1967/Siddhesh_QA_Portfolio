@@ -3,6 +3,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 export interface ISectionHeader {
   title: string;
   subtitle: string;
+  enabled?: boolean;
 }
 
 export interface ISettings extends Document {
@@ -32,6 +33,7 @@ export interface ISettings extends Document {
 const SectionHeaderSchema = new Schema({
   title: { type: String, required: true },
   subtitle: { type: String, default: '' },
+  enabled: { type: Boolean, default: true }
 }, { _id: false });
 
 const ContactHeaderSchema = new Schema({
@@ -40,6 +42,7 @@ const ContactHeaderSchema = new Schema({
   description: { type: String, default: '' },
   infoTitle: { type: String, default: '' },
   infoText: { type: String, default: '' },
+  enabled: { type: Boolean, default: true }
 }, { _id: false });
 
 const SettingsSchema = new Schema<ISettings>(

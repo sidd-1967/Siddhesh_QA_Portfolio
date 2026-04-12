@@ -62,7 +62,8 @@ export default function EducationCertSection({ education, certifications, config
   return (
     <div ref={ref}>
       {/* Education */}
-      <section id="education" className="section section-alt">
+      {config?.education?.enabled !== false && (
+        <section id="education" className="section section-alt">
         <div className="container">
           <div className="section-header">
             <span className="section-tag fade-in">{config?.education?.title || "Background"}</span>
@@ -106,9 +107,11 @@ export default function EducationCertSection({ education, certifications, config
           </div>
         </div>
       </section>
+      )}
 
       {/* Certifications */}
-      <section id="certifications" className="section">
+      {config?.certifications?.enabled !== false && (
+        <section id="certifications" className="section">
         <div className="container">
           <div className="section-header">
             <span className="section-tag fade-in">{config?.certifications?.title || "Credentials"}</span>
@@ -158,7 +161,8 @@ export default function EducationCertSection({ education, certifications, config
             )}
           </div>
         </div>
-      </section>
+        </section>
+      )}
 
       <style>{`
         .edu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }

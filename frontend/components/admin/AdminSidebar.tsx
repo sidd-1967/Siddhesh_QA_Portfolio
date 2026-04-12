@@ -87,7 +87,7 @@ export default function AdminSidebar() {
   const router = useRouter();
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
-  const [initials, setInitials] = useState('SK');
+  const [initials, setInitials] = useState('');
 
   useEffect(() => {
     adminAPI.getProfile().then(res => {

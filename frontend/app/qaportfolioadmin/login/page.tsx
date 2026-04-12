@@ -11,7 +11,7 @@ export default function AdminLoginPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
    const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const [initials, setInitials] = useState('SK');
+  const [initials, setInitials] = useState('');
 
   useEffect(() => {
     publicAPI.getProfile().then(res => {

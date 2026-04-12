@@ -34,6 +34,7 @@ export default function AdminCertificationsPage() {
       ]}
       FormComponent={CertificationForm as Parameters<typeof CrudPage<Certification>>[0]['FormComponent']}
       emptyMessage="No certifications yet."
+      sectionKey="certifications"
     />
   );
 }

@@ -27,6 +27,7 @@ export default function AdminSkillsPage() {
       ]}
       FormComponent={SkillForm as Parameters<typeof CrudPage<Skill>>[0]['FormComponent']}
       emptyMessage="No skills yet. Build your tech stack!"
+      sectionKey="skills"
     />
   );
 }

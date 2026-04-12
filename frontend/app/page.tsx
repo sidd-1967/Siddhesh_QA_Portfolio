@@ -38,31 +38,41 @@ export default async function PortfolioPage() {
     <>
       <NavBar profile={profile} />
       <main>
-        <HeroSection profile={profile as any} config={config.hero} />
-        <AboutSection 
-          profile={profile as any} 
-          config={config.about} 
-          aboutStats={(settings as any)?.aboutStats} 
-        />
-        <SkillsSection 
-          grouped={(skillsData as { grouped: Record<string, any[]> } | null)?.grouped || {}} 
-          config={config.skills} 
-          categories={(settings as any)?.skillCategories}
-        />
-        <ExperienceSection 
-          experience={(experience as any[] | null) || []} 
-          config={config.experience} 
-        />
-        <ProjectsSection 
-          projects={(projects as any[] | null) || []} 
-          config={config.projects} 
-        />
-        <EducationCertSection
-          education={(education as any[] | null) || []}
-          certifications={(certifications as any[] | null) || []}
-          config={{ education: config.education, certifications: config.certifications }}
-        />
-        <ContactSection profile={profile as any} config={config.contact} />
+        {config.hero?.enabled !== false && <HeroSection profile={profile as any} config={config.hero} />}
+        {config.about?.enabled !== false && (
+          <AboutSection 
+            profile={profile as any} 
+            config={config.about} 
+            aboutStats={(settings as any)?.aboutStats} 
+          />
+        )}
+        {config.skills?.enabled !== false && (
+          <SkillsSection 
+            grouped={(skillsData as { grouped: Record<string, any[]> } | null)?.grouped || {}} 
+            config={config.skills} 
+            categories={(settings as any)?.skillCategories}
+          />
+        )}
+        {config.experience?.enabled !== false && (
+          <ExperienceSection 
+            experience={(experience as any[] | null) || []} 
+            config={config.experience} 
+          />
+        )}
+        {config.projects?.enabled !== false && (
+          <ProjectsSection 
+            projects={(projects as any[] | null) || []} 
+            config={config.projects} 
+          />
+        )}
+        {(config.education?.enabled !== false || config.certifications?.enabled !== false) && (
+          <EducationCertSection
+            education={(education as any[] | null) || []}
+            certifications={(certifications as any[] | null) || []}
+            config={{ education: config.education, certifications: config.certifications }}
+          />
+        )}
+        {config.contact?.enabled !== false && <ContactSection profile={profile as any} config={config.contact} />}
       </main>
       <Footer name={(profile as { fullName?: string } | null)?.fullName || 'Siddhesh Govalkar'} />
     </>

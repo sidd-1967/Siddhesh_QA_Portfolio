@@ -41,6 +41,7 @@ export default function AdminProjectsPage() {
       ]}
       FormComponent={ProjectForm as Parameters<typeof CrudPage<Project>>[0]['FormComponent']}
       emptyMessage="No projects yet. Add your first project!"
+      sectionKey="projects"
     />
   );
 }

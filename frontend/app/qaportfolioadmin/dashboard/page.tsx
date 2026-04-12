@@ -13,18 +13,20 @@ interface Stats {
 export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats>({ projects: 0, experience: 0, skills: 0, education: 0, certifications: 0 });
   const [profileName, setProfileName] = useState('');
+  const [config, setConfig] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [proj, exp, skills, edu, certs, profile] = await Promise.all([
+        const [proj, exp, skills, edu, certs, profile, settingsRes] = await Promise.all([
           adminAPI.getProjects(),
           adminAPI.getExperience(),
           adminAPI.getSkills(),
           adminAPI.getEducation(),
           adminAPI.getCertifications(),
           adminAPI.getProfile(),
+          adminAPI.getSettings(),
         ]);
         setStats({
           projects: proj.data.data.length,
@@ -34,6 +36,7 @@ export default function AdminDashboard() {
           certifications: certs.data.data.length,
         });
         setProfileName(profile.data.data?.fullName || '');
+        setConfig(settingsRes.data.data);
       } catch {
         // handled silently
       } finally {
@@ -42,6 +45,19 @@ export default function AdminDashboard() {
     };
     fetchStats();
   }, []);
+
+  const toggleSectionConfig = async (key: string, enabled: boolean) => {
+    if (!config) return;
+    const newConfig = { ...config };
+    newConfig.sectionHeaders[key].enabled = enabled;
+    setConfig(newConfig);
+    try {
+      await adminAPI.updateSettings(newConfig);
+    } catch {
+      newConfig.sectionHeaders[key].enabled = !enabled;
+      setConfig({ ...newConfig });
+    }
+  };
 
   const cards = [
     { label: 'Projects', value: stats.projects, href: '/qaportfolioadmin/projects', color: '#00D4FF' },
@@ -101,6 +117,43 @@ export default function AdminDashboard() {
         </div>
       </div>
 
+      <div className="dash-quick-actions" style={{ marginTop: '2.5rem' }}>
+        <h2 className="dash-section-title">Section Visibility Overview</h2>
+        <div className="card" style={{ padding: '0', overflow: 'hidden' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <thead>
+              <tr>
+                <th style={{ padding: '1rem', borderBottom: '1px solid var(--color-border)', color: 'var(--color-text-muted)', fontSize: '0.8rem', textTransform: 'uppercase' }}>Section</th>
+                <th style={{ padding: '1rem', borderBottom: '1px solid var(--color-border)', color: 'var(--color-text-muted)', fontSize: '0.8rem', textTransform: 'uppercase' }}>Status</th>
+                <th style={{ padding: '1rem', borderBottom: '1px solid var(--color-border)', color: 'var(--color-text-muted)', fontSize: '0.8rem', textTransform: 'uppercase', width: '120px' }}>Toggle</th>
+              </tr>
+            </thead>
+            <tbody>
+              {config && Object.entries(config.sectionHeaders).map(([key, header]: [string, any]) => (
+                <tr key={key} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                  <td style={{ padding: '1rem', color: 'var(--color-text-primary)', fontWeight: 600 }}>{key.charAt(0).toUpperCase() + key.slice(1)}</td>
+                  <td style={{ padding: '1rem' }}>
+                    <span className={`tag ${header.enabled !== false ? 'tag-enabled' : 'tag-disabled'}`}>
+                      {header.enabled !== false ? 'Visible' : 'Hidden'}
+                    </span>
+                  </td>
+                  <td style={{ padding: '1rem' }}>
+                    <label className="toggle-switch" title={`Toggle ${key} section visibility`}>
+                      <input 
+                        type="checkbox" 
+                        checked={header.enabled !== false} 
+                        onChange={(e) => toggleSectionConfig(key, e.target.checked)} 
+                      />
+                      <div className="toggle-slider"></div>
+                    </label>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <style>{`
         .dash-header {
           display: flex;
@@ -149,6 +202,8 @@ export default function AdminDashboard() {
         }
         .dash-action-label { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.25rem; }
         .dash-action-desc { font-size: 0.78rem; color: var(--color-text-muted); }
+        .tag-enabled { background: rgba(34,211,165,0.1); color: var(--color-success); border-color: rgba(34,211,165,0.2); }
+        .tag-disabled { background: rgba(255,107,107,0.1); color: var(--color-error); border-color: rgba(255,107,107,0.2); }
       `}</style>
     </div>
   );

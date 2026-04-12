@@ -30,11 +30,39 @@ export default function AdminProfilePage() {
   const [toast, setToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const [sectionEnabled, setSectionEnabled] = useState<boolean | null>(null);
+  const [toggling, setToggling] = useState(false);
+
   useEffect(() => {
     adminAPI.getProfile().then((res) => {
       if (res.data.data) setForm(res.data.data);
     }).finally(() => setLoading(false));
+
+    adminAPI.getSettings().then(res => {
+      const config = res.data.data.sectionHeaders['about'];
+      if (config) setSectionEnabled(config.enabled !== false);
+    }).catch(() => {});
   }, []);
+
+  const handleToggleSection = async () => {
+    if (sectionEnabled === null) return;
+    setToggling(true);
+    try {
+      const res = await adminAPI.getSettings();
+      const currentConfig = res.data.data;
+      if (!currentConfig.sectionHeaders['about']) {
+        currentConfig.sectionHeaders['about'] = { title: 'About Me', subtitle: '' };
+      }
+      currentConfig.sectionHeaders['about'].enabled = !sectionEnabled;
+      await adminAPI.updateSettings(currentConfig);
+      setSectionEnabled(!sectionEnabled);
+      showToast('success', `About section ${!sectionEnabled ? 'enabled' : 'disabled'} successfully!`);
+    } catch {
+      showToast('error', 'Failed to toggle section visibility');
+    } finally {
+      setToggling(false);
+    }
+  };
 
   const showToast = (type: 'success' | 'error', msg: string) => {
     setToast({ type, msg });
@@ -77,6 +105,18 @@ export default function AdminProfilePage() {
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
         <h1 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Edit Profile</h1>
+        {sectionEnabled !== null && (
+          <label className="toggle-switch" title="Toggle About Me section on website">
+            <input 
+              type="checkbox" 
+              checked={sectionEnabled} 
+              onChange={handleToggleSection} 
+              disabled={toggling} 
+            />
+            <div className="toggle-slider"></div>
+            <span className="toggle-label-text">Visible</span>
+          </label>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} noValidate>

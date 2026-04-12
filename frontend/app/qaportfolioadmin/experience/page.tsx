@@ -40,7 +40,8 @@ export default function AdminExperiencePage() {
         { key: 'location', label: 'Location' },
       ]}
       FormComponent={ExperienceForm as Parameters<typeof CrudPage<Experience>>[0]['FormComponent']}
-      emptyMessage="No experience entries yet."
+      emptyMessage="No work experience added yet."
+      sectionKey="experience"
     />
   );
 }

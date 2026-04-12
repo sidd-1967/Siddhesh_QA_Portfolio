@@ -125,7 +125,7 @@ export default function AdminSettingsPage() {
     }
   };
 
-  const updateHeader = (section: string, field: 'title' | 'subtitle' | 'description' | 'infoTitle' | 'infoText', val: string) => {
+  const updateHeader = (section: string, field: 'title' | 'subtitle' | 'description' | 'infoTitle' | 'infoText' | 'enabled', val: any) => {
     setConfig({
       ...config,
       sectionHeaders: {
@@ -176,8 +176,18 @@ export default function AdminSettingsPage() {
             <h2 className="section-title-sm">Section Titles & Subtitles</h2>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
               {config && Object.entries(config.sectionHeaders).map(([key, header]: [string, any]) => (
-                <div key={key} className="config-group" style={{ marginBottom: key === 'contact' ? '1.5rem' : '0' }}>
-                  <label className="config-label">{key.charAt(0).toUpperCase() + key.slice(1)} Section</label>
+                <div key={key} className="config-group" style={{ marginBottom: key === 'contact' ? '1.5rem' : '0', padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: 'var(--radius-md)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                    <label className="config-label" style={{ margin: 0, color: 'var(--color-accent)' }}>{key.charAt(0).toUpperCase() + key.slice(1)} Section</label>
+                    <label className="toggle-switch" title={`Toggle ${key} section visibility`}>
+                      <input 
+                        type="checkbox" 
+                        checked={header.enabled !== false} 
+                        onChange={(e) => updateHeader(key, 'enabled', e.target.checked)} 
+                      />
+                      <div className="toggle-slider"></div>
+                    </label>
+                  </div>
                   <input
                     className="form-input"
                     value={header.title}
