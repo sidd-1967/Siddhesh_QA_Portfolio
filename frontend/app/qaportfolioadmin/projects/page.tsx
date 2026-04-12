@@ -12,6 +12,18 @@ interface Project {
   order: number;
 }
 
+// Strip HTML tags AND decode entities (e.g. &nbsp;) using DOMParser
+function stripHtml(html: string, maxLen = 80): string {
+  if (!html) return '—';
+  try {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const plain = (doc.body.textContent || '').replace(/\s+/g, ' ').trim();
+    return plain.length > maxLen ? plain.slice(0, maxLen) + '…' : plain;
+  } catch {
+    return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, maxLen);
+  }
+}
+
 export default function AdminProjectsPage() {
   return (
     <CrudPage<Project>
@@ -22,7 +34,7 @@ export default function AdminProjectsPage() {
       deleteFn={(id) => adminAPI.deleteProject(id)}
       columns={[
         { key: 'title', label: 'Title' },
-        { key: 'description', label: 'Description' },
+        { key: 'description', label: 'Description', render: (r) => stripHtml(r.description) },
         { key: 'techStack', label: 'Tech Stack' },
         { key: 'featured', label: 'Featured' },
         { key: 'order', label: 'Order' },

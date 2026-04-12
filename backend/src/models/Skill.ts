@@ -11,12 +11,12 @@ export type SkillCategory =
   | 'Databases'
   | 'Other';
 
-export type Proficiency = 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert';
+export type Proficiency = 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert' | string;
 
 export interface ISkill extends Document {
   name: string;
   category: SkillCategory;
-  proficiency: Proficiency;
+  proficiency?: Proficiency;
   iconUrl?: string;
   order: number;
 }
@@ -27,12 +27,10 @@ const SkillSchema = new Schema<ISkill>(
     category: {
       type: String,
       required: true,
-      enum: ['Testing', 'Automation', 'Languages', 'Tools', 'Frameworks', 'Cloud', 'CI/CD', 'Databases', 'Other'],
     },
     proficiency: {
       type: String,
-      required: true,
-      enum: ['Beginner', 'Intermediate', 'Advanced', 'Expert'],
+      required: false,
     },
     iconUrl: { type: String, trim: true },
     order: { type: Number, default: 0 },

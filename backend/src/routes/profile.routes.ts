@@ -17,7 +17,8 @@ const profileValidation = [
   body('socialLinks.github').optional({ checkFalsy: true }).isURL().withMessage('GitHub must be a valid URL'),
   body('socialLinks.twitter').optional({ checkFalsy: true }).isURL().withMessage('Twitter must be a valid URL'),
   body('socialLinks.website').optional({ checkFalsy: true }).isURL().withMessage('Website must be a valid URL'),
-  body('yearsOfExperience').optional().isInt({ min: 0 }).withMessage('Must be a positive number'),
+  body('yearsOfExperience').optional().isFloat({ min: 0 }).withMessage('Must be a positive number'),
+  body('heroBio').optional().trim().isLength({ max: 500 }),
   body('openToWork').optional().isBoolean(),
 ];
 

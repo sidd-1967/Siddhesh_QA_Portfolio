@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import ImageUpload from './ImageUpload';
 import MultiSelect from './MultiSelect';
+import SearchableSelect from './SearchableSelect';
+import RichTextEditor from './RichTextEditor';
 import { adminAPI } from '@/lib/api';
 
 interface Experience {
@@ -24,12 +26,30 @@ interface Props {
   loading: boolean;
 }
 
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const YEARS = Array.from({ length: 50 }, (_, i) => (new Date().getFullYear() + 5 - i).toString());
+
+const monthToIndex = (name: string) => (MONTHS.indexOf(name) + 1).toString().padStart(2, '0');
+const indexToMonth = (idx: string) => MONTHS[parseInt(idx) - 1];
+
 export default function ExperienceForm({ initialData, onSubmit, onCancel, loading }: Props) {
+  // Helper to parse "YYYY-MM"
+  const parseDate = (d?: string | null) => {
+    if (!d || !d.includes('-')) return { month: '', year: '' };
+    const [y, m] = d.split('-');
+    return { month: indexToMonth(m), year: y };
+  };
+
+  const startParsed = parseDate(initialData?.startDate);
+  const endParsed = parseDate(initialData?.endDate);
+
   const [form, setForm] = useState({
     company: initialData?.company || '',
     role: initialData?.role || '',
-    startDate: initialData?.startDate ? initialData.startDate.split('T')[0] : '',
-    endDate: initialData?.endDate ? initialData.endDate.split('T')[0] : '',
+    startMonth: startParsed.month,
+    startYear: startParsed.year,
+    endMonth: endParsed.month,
+    endYear: endParsed.year,
     current: initialData?.current || false,
     description: initialData?.description || '',
     techStack: initialData?.techStack || [],
@@ -37,6 +57,7 @@ export default function ExperienceForm({ initialData, onSubmit, onCancel, loadin
     companyUrl: initialData?.companyUrl || '',
     companyLogo: initialData?.companyLogo || '',
   });
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [availableSkills, setAvailableSkills] = useState<string[]>([]);
 
@@ -51,10 +72,17 @@ export default function ExperienceForm({ initialData, onSubmit, onCancel, loadin
     const errs: Record<string, string> = {};
     if (!form.company.trim()) errs.company = 'Company is required';
     if (!form.role.trim()) errs.role = 'Role is required';
-    if (!form.startDate) errs.startDate = 'Start date is required';
-    if (!form.current && form.endDate && form.startDate && new Date(form.endDate) <= new Date(form.startDate)) {
-      errs.endDate = 'End date must be after start date';
+    if (!form.startMonth || !form.startYear) errs.startDate = 'Start date required';
+    
+    if (!form.current && (form.endMonth || form.endYear)) {
+      if (!form.endMonth || !form.endYear) errs.endDate = 'Complete end date required';
+      else {
+        const start = `${form.startYear}-${monthToIndex(form.startMonth)}`;
+        const end = `${form.endYear}-${monthToIndex(form.endMonth)}`;
+        if (end <= start) errs.endDate = 'End date must be after start date';
+      }
     }
+    
     if (form.companyUrl && !/^https?:\/\//.test(form.companyUrl)) errs.companyUrl = 'Must be a valid URL';
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -63,10 +91,15 @@ export default function ExperienceForm({ initialData, onSubmit, onCancel, loadin
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
+
+    const startDate = `${form.startYear}-${monthToIndex(form.startMonth)}`;
+    const endDate = form.current ? null : (form.endMonth && form.endYear ? `${form.endYear}-${monthToIndex(form.endMonth)}` : null);
+
     await onSubmit({
       ...form,
-      endDate: form.current ? null : form.endDate || null,
-    });
+      startDate,
+      endDate,
+    } as any);
   };
 
   return (
@@ -88,40 +121,67 @@ export default function ExperienceForm({ initialData, onSubmit, onCancel, loadin
 
       <div style={{ marginBottom: '1.5rem' }}>
         <ImageUpload
-          label="Company Logo (PNG)"
+          label="Company Logo"
           value={form.companyLogo}
           onChange={(url) => setForm({ ...form, companyLogo: url })}
         />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-        <div className="form-group">
-          <label className="form-label">Start Date *</label>
-          <input type="date" className={`form-input${errors.startDate ? ' input-error' : ''}`} value={form.startDate}
-            onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
-          {errors.startDate && <span className="form-error">{errors.startDate}</span>}
+      <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: '1.25rem', marginBottom: '1.5rem', background: 'rgba(255,255,255,0.02)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <SearchableSelect 
+              label="Start Month *" 
+              options={MONTHS} 
+              value={form.startMonth} 
+              onChange={(v) => setForm({ ...form, startMonth: v })}
+              className={errors.startDate ? 'input-error' : ''}
+            />
+            <SearchableSelect 
+              label="Start Year *" 
+              options={YEARS} 
+              value={form.startYear} 
+              onChange={(v) => setForm({ ...form, startYear: v })}
+              className={errors.startDate ? 'input-error' : ''}
+            />
+          </div>
+          <div style={{ display: 'flex', gap: '0.5rem', opacity: form.current ? 0.5 : 1 }}>
+            <SearchableSelect 
+              label="End Month" 
+              options={MONTHS} 
+              value={form.endMonth} 
+              onChange={(v) => setForm({ ...form, endMonth: v })}
+              className={errors.endDate ? 'input-error' : ''}
+            />
+            <SearchableSelect 
+              label="End Year" 
+              options={YEARS} 
+              value={form.endYear} 
+              onChange={(v) => setForm({ ...form, endYear: v })}
+              className={errors.endDate ? 'input-error' : ''}
+            />
+          </div>
         </div>
-        <div className="form-group">
-          <label className="form-label">End Date {form.current ? '(Current)' : ''}</label>
-          <input type="date" className={`form-input${errors.endDate ? ' input-error' : ''}`} value={form.endDate}
-            disabled={form.current}
-            onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
-          {errors.endDate && <span className="form-error">{errors.endDate}</span>}
+        {(errors.startDate || errors.endDate) && (
+          <div style={{ marginBottom: '0.5rem' }}>
+            {errors.startDate && <span className="form-error" style={{ display: 'block' }}>{errors.startDate}</span>}
+            {errors.endDate && <span className="form-error" style={{ display: 'block' }}>{errors.endDate}</span>}
+          </div>
+        )}
+        <div className="form-group" style={{ flexDirection: 'row', alignItems: 'center', gap: '0.75rem', marginBottom: 0 }}>
+          <input type="checkbox" id="exp-current" checked={form.current}
+            onChange={(e) => setForm({ ...form, current: e.target.checked })} />
+          <label htmlFor="exp-current" className="form-label" style={{ margin: 0 }}>Currently working here</label>
         </div>
       </div>
 
-      <div className="form-group" style={{ flexDirection: 'row', alignItems: 'center', gap: '0.75rem' }}>
-        <input type="checkbox" id="exp-current" checked={form.current}
-          onChange={(e) => setForm({ ...form, current: e.target.checked, endDate: '' })} />
-        <label htmlFor="exp-current" className="form-label" style={{ margin: 0 }}>Currently working here</label>
-      </div>
-
-      <div className="form-group">
-        <label className="form-label">Description</label>
-        <textarea className="form-textarea" value={form.description} rows={4}
-          onChange={(e) => setForm({ ...form, description: e.target.value })}
-          placeholder="Describe your responsibilities and achievements..." />
-      </div>
+      <RichTextEditor
+        label="Description"
+        value={form.description}
+        onChange={(val) => setForm({ ...form, description: val })}
+        placeholder="Describe your responsibilities and achievements (use bold, bullets etc.)..."
+        minHeight={200}
+      />
 
       <MultiSelect
         label="Tech Stack (Fetched from Skills)"
@@ -154,3 +214,4 @@ export default function ExperienceForm({ initialData, onSubmit, onCancel, loadin
     </form>
   );
 }
+

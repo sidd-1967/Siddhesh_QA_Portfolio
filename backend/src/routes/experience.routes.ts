@@ -9,9 +9,9 @@ const router = Router();
 const experienceValidation = [
   body('company').trim().notEmpty().withMessage('Company is required').isLength({ max: 150 }),
   body('role').trim().notEmpty().withMessage('Role is required').isLength({ max: 150 }),
-  body('startDate').isISO8601().withMessage('Valid start date required'),
-  body('endDate').optional({ checkFalsy: true }).isISO8601().withMessage('Valid end date required').custom((endDate, { req }) => {
-    if (endDate && req.body.startDate && new Date(endDate) <= new Date(req.body.startDate)) {
+  body('startDate').matches(/^\d{4}-(0[1-9]|1[0-2])$/).withMessage('Valid start date (YYYY-MM) required'),
+  body('endDate').optional({ checkFalsy: true }).matches(/^\d{4}-(0[1-9]|1[0-2])$/).withMessage('Valid end date (YYYY-MM) required').custom((endDate, { req }) => {
+    if (endDate && req.body.startDate && endDate <= req.body.startDate) {
       throw new Error('End date must be after start date');
     }
     return true;

@@ -5,7 +5,6 @@ interface Skill {
   _id: string;
   name: string;
   category: string;
-  proficiency: string;
   iconUrl?: string;
   order: number;
 }
@@ -19,29 +18,25 @@ interface Props {
 
 export default function SkillForm({ initialData, onSubmit, onCancel, loading }: Props) {
   const [categories, setCategories] = useState<string[]>(['Testing', 'Automation', 'Languages', 'Tools', 'Frameworks', 'Cloud', 'CI/CD', 'Databases', 'Other']);
-  const [proficiencies, setProficiencies] = useState<string[]>(['Beginner', 'Intermediate', 'Advanced', 'Expert']);
   const [settingsLoading, setSettingsLoading] = useState(true);
 
   const [form, setForm] = useState({
     name: initialData?.name || '',
     category: initialData?.category || '',
-    proficiency: initialData?.proficiency || '',
     iconUrl: initialData?.iconUrl || '',
     order: initialData?.order ?? 0,
   });
 
   useEffect(() => {
     adminAPI.getSettings().then(res => {
-      const { skillCategories, skillProficiencies } = res.data.data;
+      const { skillCategories } = res.data.data;
       if (skillCategories) setCategories(skillCategories);
-      if (skillProficiencies) setProficiencies(skillProficiencies);
       
       // Set defaults if creating new
       if (!initialData?._id) {
         setForm(prev => ({
           ...prev,
           category: skillCategories?.[0] || prev.category,
-          proficiency: skillProficiencies?.[0] || prev.proficiency,
         }));
       }
     }).finally(() => setSettingsLoading(false));
@@ -72,21 +67,12 @@ export default function SkillForm({ initialData, onSubmit, onCancel, loading }: 
         {errors.name && <span className="form-error">{errors.name}</span>}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-        <div className="form-group">
-          <label className="form-label">Category *</label>
-          <select className="form-select" value={form.category}
-            onChange={(e) => setForm({ ...form, category: e.target.value })}>
-            {categories.map((c) => <option key={c} value={c}>{c}</option>)}
-          </select>
-        </div>
-        <div className="form-group">
-          <label className="form-label">Proficiency *</label>
-          <select className="form-select" value={form.proficiency}
-            onChange={(e) => setForm({ ...form, proficiency: e.target.value })}>
-            {proficiencies.map((p) => <option key={p} value={p}>{p}</option>)}
-          </select>
-        </div>
+      <div className="form-group">
+        <label className="form-label">Category *</label>
+        <select className="form-select" value={form.category}
+          onChange={(e) => setForm({ ...form, category: e.target.value })}>
+          {categories.map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px', gap: '1rem' }}>

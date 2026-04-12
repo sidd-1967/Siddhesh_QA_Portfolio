@@ -9,8 +9,8 @@ import EducationCertSection from '@/components/public/EducationCertSection';
 import ContactSection from '@/components/public/ContactSection';
 import Footer from '@/components/public/Footer';
 
-// Revalidate every 60 seconds — instant propagation after admin updates (ISR)
-export const revalidate = 60;
+// Revalidate every 10 seconds — faster propagation after admin updates (ISR)
+export const revalidate = 10;
 
 async function fetchData<T>(fn: () => Promise<{ data: { data: T } }>): Promise<T | null> {
   try {
@@ -39,10 +39,15 @@ export default async function PortfolioPage() {
       <NavBar profile={profile} />
       <main>
         <HeroSection profile={profile as any} config={config.hero} />
-        <AboutSection profile={profile as any} config={config.about} />
+        <AboutSection 
+          profile={profile as any} 
+          config={config.about} 
+          aboutStats={(settings as any)?.aboutStats} 
+        />
         <SkillsSection 
           grouped={(skillsData as { grouped: Record<string, any[]> } | null)?.grouped || {}} 
           config={config.skills} 
+          categories={(settings as any)?.skillCategories}
         />
         <ExperienceSection 
           experience={(experience as any[] | null) || []} 

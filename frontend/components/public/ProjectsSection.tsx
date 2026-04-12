@@ -30,9 +30,6 @@ export default function ProjectsSection({ projects, config }: { projects: Projec
         <div className="section-header">
           <span className="section-tag fade-in">{config?.title || "Work"}</span>
           <h2 className="section-title fade-in delay-1">{config?.subtitle || "Projects"}</h2>
-          <p className="section-desc fade-in delay-2">
-            Automation frameworks, test suites, and QA tools I&apos;ve built.
-          </p>
         </div>
 
         {projects.length === 0 ? (
@@ -60,7 +57,10 @@ export default function ProjectsSection({ projects, config }: { projects: Projec
                   </div>
 
                   <h3 className="project-title">{project.title}</h3>
-                  <p className="project-desc">{project.description}</p>
+                  <div
+                    className="project-desc ql-editor"
+                    dangerouslySetInnerHTML={{ __html: project.description }}
+                  />
 
                   {project.techStack?.length > 0 && (
                     <div className="project-tags">
@@ -154,7 +154,15 @@ export default function ProjectsSection({ projects, config }: { projects: Projec
           line-height: 1.7;
           flex: 1;
           margin-bottom: 1rem;
+          padding: 0;
+          border: none;
+          background: none;
+          overflow-wrap: break-word;
         }
+        .project-desc ul, .project-desc ol { padding-left: 1.25rem; margin-bottom: 0.25rem; }
+        .project-desc li { margin-bottom: 0.2rem; }
+        .project-desc p { margin-bottom: 0.3rem; }
+        .project-desc strong { color: var(--color-text-primary); }
         .project-tags {
           display: flex;
           flex-wrap: wrap;

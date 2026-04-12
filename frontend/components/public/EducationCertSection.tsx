@@ -93,7 +93,12 @@ export default function EducationCertSection({ education, certifications, config
                       <span>{edu.startYear} – {edu.endYear || 'Present'}</span>
                       {edu.grade && <span className="edu-grade">{edu.grade}</span>}
                     </div>
-                    {edu.description && <p className="edu-desc">{edu.description}</p>}
+                    {edu.description && (
+                      <div
+                        className="edu-desc ql-editor"
+                        dangerouslySetInnerHTML={{ __html: edu.description }}
+                      />
+                    )}
                   </div>
                 </div>
               ))
@@ -172,7 +177,11 @@ export default function EducationCertSection({ education, certifications, config
         .edu-field { font-size: 0.85rem; color: var(--color-text-secondary); }
         .edu-meta { display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.8rem; color: var(--color-text-muted); margin-top: 0.25rem; }
         .edu-grade { color: var(--color-success); font-weight: 600; }
-        .edu-desc { font-size: 0.85rem; color: var(--color-text-secondary); margin-top: 0.5rem; }
+        .edu-desc { font-size: 0.85rem; color: var(--color-text-secondary); margin-top: 0.5rem; padding: 0; border: none; background: none; overflow-wrap: break-word; }
+        .edu-desc ul, .edu-desc ol { padding-left: 1.25rem; margin-bottom: 0.25rem; }
+        .edu-desc li { margin-bottom: 0.2rem; }
+        .edu-desc p { margin-bottom: 0.25rem; }
+        .edu-desc strong { color: var(--color-text-primary); }
 
         .cert-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.25rem; }
         .cert-card { padding: 1.5rem; display: flex; flex-direction: column; gap: 0.6rem; }

@@ -1,10 +1,10 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { authAPI, adminAPI } from '@/lib/api';
 
 export default function AdminSettingsPage() {
-  const [activeTab, setActiveTab] = useState<'security' | 'content'>('content');
-  
+  const [activeTab, setActiveTab] = useState<'security' | 'content' | 'email'>('content');
+
   // Security State
   const [pwdForm, setPwdForm] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
   const [pwdLoading, setPwdLoading] = useState(false);
@@ -14,14 +14,63 @@ export default function AdminSettingsPage() {
   const [config, setConfig] = useState<any>(null);
   const [configLoading, setConfigLoading] = useState(true);
   const [savingConfig, setSavingConfig] = useState(false);
+  
+  // Local string state for comma-separated inputs to prevent cursor jumping/deletion
+  const [categoriesText, setCategoriesText] = useState('');
+
+  // Email Template State
+  const [template, setTemplate] = useState({ subject: '', body: '' });
+  const [savedTemplate, setSavedTemplate] = useState({ subject: '', body: '' });
+  const [templateLoading, setTemplateLoading] = useState(true);
+  const [savingTemplate, setSavingTemplate] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const [toast, setToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
 
   useEffect(() => {
+    // Fetch Settings
     adminAPI.getSettings().then(res => {
-      setConfig(res.data.data);
+      const data = res.data.data;
+      setConfig(data);
+      setCategoriesText(data.skillCategories.join(', '));
     }).finally(() => setConfigLoading(false));
+
+    // Fetch Email Template
+    adminAPI.getEmailTemplate().then(res => {
+      setTemplate(res.data.data || { subject: '', body: '' });
+      setSavedTemplate(res.data.data || { subject: '', body: '' });
+    }).finally(() => setTemplateLoading(false));
   }, []);
+
+  const updateEmailPreview = () => {
+    if (!iframeRef.current || !template.body) return;
+
+    const placeholders: Record<string, string> = {
+      name: 'John Doe',
+      email: 'john@example.com',
+      subject: 'Collaboration Inquiry',
+      message: 'Hello, I really liked your QA portfolio! Let\'s talk about some projects.',
+      year: new Date().getFullYear().toString(),
+    };
+
+    let content = template.body;
+    Object.entries(placeholders).forEach(([key, val]) => {
+      content = content.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), val);
+    });
+
+    const doc = iframeRef.current.contentDocument;
+    if (doc) {
+      doc.open();
+      doc.write(content);
+      doc.close();
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'email') {
+      updateEmailPreview();
+    }
+  }, [template.body, activeTab]);
 
   const showToast = (type: 'success' | 'error', msg: string) => {
     setToast({ type, msg });
@@ -58,8 +107,16 @@ export default function AdminSettingsPage() {
   const handleConfigSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSavingConfig(true);
+    
+    // Sync final text states to config before saving
+    const finalConfig = {
+      ...config,
+      skillCategories: categoriesText.split(',').map(s => s.trim()).filter(Boolean)
+    };
+    
     try {
-      await adminAPI.updateSettings(config);
+      await adminAPI.updateSettings(finalConfig);
+      setConfig(finalConfig);
       showToast('success', 'Content configuration saved!');
     } catch {
       showToast('error', 'Failed to save configuration');
@@ -82,7 +139,23 @@ export default function AdminSettingsPage() {
     setConfig({ ...config, [field]: val.split(',').map(s => s.trim()).filter(Boolean) });
   };
 
-  if (configLoading) return <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}><div className="spinner" /></div>;
+  // --- Email Logic ---
+  const handleTemplateSave = async () => {
+    setSavingTemplate(true);
+    try {
+      await adminAPI.updateEmailTemplate(template);
+      setSavedTemplate(template);
+      showToast('success', 'Email template saved successfully!');
+    } catch {
+      showToast('error', 'Failed to save email template');
+    } finally {
+      setSavingTemplate(false);
+    }
+  };
+
+  const isTemplateDirty = template.subject !== savedTemplate.subject || template.body !== savedTemplate.body;
+
+  if (configLoading || templateLoading) return <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}><div className="spinner" /></div>;
 
   return (
     <div style={{ maxWidth: '900px' }}>
@@ -94,6 +167,7 @@ export default function AdminSettingsPage() {
       <div className="tabs">
         <button className={`tab-btn${activeTab === 'content' ? ' active' : ''}`} onClick={() => setActiveTab('content')}>Dynamic Content</button>
         <button className={`tab-btn${activeTab === 'security' ? ' active' : ''}`} onClick={() => setActiveTab('security')}>Security</button>
+        <button className={`tab-btn${activeTab === 'email' ? ' active' : ''}`} onClick={() => setActiveTab('email')}>Email Template</button>
       </div>
 
       {activeTab === 'content' ? (
@@ -151,21 +225,52 @@ export default function AdminSettingsPage() {
           </div>
 
           <div className="card" style={{ padding: '2rem', marginBottom: '1.5rem' }}>
+            <h2 className="section-title-sm">About Section Stats Cards</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              {config.aboutStats && config.aboutStats.map((stat: any, index: number) => (
+                <div key={index} className="config-group" style={{ padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: 'var(--radius-md)' }}>
+                  <label className="config-label">Card {index + 1}</label>
+                  <input
+                    className="form-input"
+                    value={stat.label}
+                    onChange={(e) => {
+                      const newStats = [...config.aboutStats];
+                      newStats[index].label = e.target.value;
+                      setConfig({ ...config, aboutStats: newStats });
+                    }}
+                    placeholder="Label (e.g. Projects Tested)"
+                    style={{ marginBottom: '0.5rem' }}
+                  />
+                  <input
+                    className="form-input"
+                    value={stat.value}
+                    onChange={(e) => {
+                      const newStats = [...config.aboutStats];
+                      newStats[index].value = e.target.value;
+                      setConfig({ ...config, aboutStats: newStats });
+                    }}
+                    placeholder="Value (e.g. 15+)"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="card" style={{ padding: '2rem', marginBottom: '1.5rem' }}>
             <h2 className="section-title-sm">Dropdown Options</h2>
             <div className="form-group">
-              <label className="form-label">Skill Categories <small>(comma-separated)</small></label>
+              <label htmlFor="skillCategories" className="form-label">Skill Categories <small>(comma-separated)</small></label>
               <input
+                id="skillCategories"
+                name="skillCategories"
                 className="form-input"
-                value={config.skillCategories.join(', ')}
-                onChange={(e) => updateArray('skillCategories', e.target.value)}
-              />
-            </div>
-            <div className="form-group" style={{ marginTop: '1rem' }}>
-              <label className="form-label">Skill Proficiencies <small>(comma-separated)</small></label>
-              <input
-                className="form-input"
-                value={config.skillProficiencies.join(', ')}
-                onChange={(e) => updateArray('skillProficiencies', e.target.value)}
+                value={categoriesText}
+                onChange={(e) => setCategoriesText(e.target.value)}
+                placeholder="Testing, Automation, Frameworks..."
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck="false"
               />
             </div>
           </div>
@@ -176,7 +281,7 @@ export default function AdminSettingsPage() {
             </button>
           </div>
         </form>
-      ) : (
+      ) : activeTab === 'security' ? (
         <div className="card" style={{ padding: '2rem', maxWidth: '500px' }}>
           <h2 className="section-title-sm">Change Password</h2>
           <form onSubmit={handlePwdSubmit} noValidate>
@@ -202,6 +307,52 @@ export default function AdminSettingsPage() {
               {pwdLoading ? 'Updating...' : 'Update Password'}
             </button>
           </form>
+        </div>
+      ) : (
+        <div className="template-editor-layout">
+          <div className="card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <h2 className="section-title-sm">Contact Email Template</h2>
+            <div className="form-group">
+              <label className="form-label">Email Subject</label>
+              <input
+                className="form-input"
+                value={template.subject}
+                onChange={(e) => setTemplate({ ...template, subject: e.target.value })}
+                placeholder="e.g. New Message: {{subject}}"
+              />
+              <p className="field-hint">Use <code>{'{{subject}}'}</code> to include the sender&apos;s subject.</p>
+            </div>
+
+            <div className="form-group" style={{ flex: 1 }}>
+              <label className="form-label">Email Body (HTML/CSS)</label>
+              <textarea
+                className="code-editor"
+                value={template.body}
+                onChange={(e) => setTemplate({ ...template, body: e.target.value })}
+                placeholder="<html>...</html>"
+              />
+              <div style={{ marginTop: '0.75rem' }}>
+                <span className="editor-hint">Available placeholders:</span>
+                <div className="placeholder-chips">
+                  <code>{'{{name}}'}</code> <code>{'{{email}}'}</code> <code>{'{{subject}}'}</code> <code>{'{{message}}'}</code> <code>{'{{year}}'}</code>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
+              <button className="btn btn-outline" onClick={() => setTemplate(savedTemplate)} disabled={!isTemplateDirty || savingTemplate}>Discard</button>
+              <button className="btn btn-primary" onClick={handleTemplateSave} disabled={!isTemplateDirty || savingTemplate}>
+                {savingTemplate ? 'Saving...' : 'Save Template'}
+              </button>
+            </div>
+          </div>
+
+          <div className="preview-wrap">
+            <span className="config-label" style={{ marginBottom: '0.5rem', display: 'block' }}>Email Preview</span>
+            <div className="preview-window">
+              <iframe ref={iframeRef} title="Email Preview" className="preview-iframe" />
+            </div>
+          </div>
         </div>
       )}
 
@@ -235,6 +386,37 @@ export default function AdminSettingsPage() {
         .config-group { display: flex; flex-direction: column; }
         .config-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--color-text-muted); margin-bottom: 0.5rem; letter-spacing: 0.05em; }
         .input-error { border-color: var(--color-error) !important; }
+
+        /* Email Tab Styles */
+        .template-editor-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start; }
+        .code-editor {
+          width: 100%; min-height: 400px;
+          background: #1e1e1e; color: #d4d4d4;
+          font-family: monospace; font-size: 13px;
+          padding: 1.25rem; border-radius: var(--radius-md);
+          border: 1px solid var(--color-border); resize: vertical; line-height: 1.5;
+        }
+        .code-editor:focus { outline: none; border-color: var(--color-accent); }
+        .field-hint { font-size: 0.75rem; color: var(--color-text-muted); margin-top: 0.25rem; }
+        .field-hint code { background: rgba(255,255,255,0.05); padding: 1px 3px; border-radius: 4px; color: var(--color-accent); }
+        .editor-hint { font-size: 0.7rem; color: var(--color-text-muted); display: block; margin-bottom: 0.4rem; font-weight: 600; text-transform: uppercase; }
+        .placeholder-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+        .placeholder-chips code {
+          background: rgba(0,212,255,0.08); color: var(--color-accent);
+          padding: 2px 6px; border-radius: 4px; font-size: 0.7rem;
+          border: 1px solid rgba(0,212,255,0.15);
+        }
+        .preview-window {
+          background: #fff; border-radius: var(--radius-lg);
+          border: 1px solid var(--color-border); overflow: hidden;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.1); height: 600px; display: flex;
+        }
+        .preview-iframe { width: 100%; height: 100%; border: none; }
+        
+        @media (max-width: 1024px) {
+          .template-editor-layout { grid-template-columns: 1fr; }
+          .preview-window { height: 500px; }
+        }
       `}</style>
     </div>
   );

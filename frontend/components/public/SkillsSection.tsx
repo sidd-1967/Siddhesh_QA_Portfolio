@@ -5,29 +5,22 @@ interface Skill {
   _id: string;
   name: string;
   category: string;
-  proficiency: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert';
+  iconUrl?: string;
 }
 
-const proficiencyMap: Record<string, number> = {
-  Beginner: 25,
-  Intermediate: 50,
-  Advanced: 75,
-  Expert: 95,
-};
-
 const categoryColors: Record<string, string> = {
-  Testing:     '#22D3A5',
-  Automation:  '#00D4FF',
-  Languages:   '#7B5FFD',
-  Tools:       '#F59E0B',
-  Frameworks:  '#EC4899',
-  'CI/CD':    '#6366F1',
-  Cloud:       '#0EA5E9',
-  Databases:   '#14B8A6',
-  Other:       '#94A3B8',
+  Testing: '#22D3A5',
+  Automation: '#00D4FF',
+  Languages: '#7B5FFD',
+  Tools: '#F59E0B',
+  Frameworks: '#EC4899',
+  'CI/CD': '#6366F1',
+  Cloud: '#0EA5E9',
+  Databases: '#14B8A6',
+  Other: '#94A3B8',
 };
 
-export default function SkillsSection({ grouped, config }: { grouped: Record<string, Skill[]>, config?: any }) {
+export default function SkillsSection({ grouped, config, categories: orderedCategories }: { grouped: Record<string, Skill[]>, config?: any, categories?: string[] }) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -35,11 +28,11 @@ export default function SkillsSection({ grouped, config }: { grouped: Record<str
       (entries) => entries.forEach((e) => e.target.classList.toggle('visible', e.isIntersecting)),
       { threshold: 0.08 }
     );
-    ref.current?.querySelectorAll('.fade-in, .skill-bar-fill').forEach((el) => observer.observe(el));
+    ref.current?.querySelectorAll('.fade-in, .skill-pill').forEach((el) => observer.observe(el));
     return () => observer.disconnect();
   }, [grouped]);
 
-  const categories = Object.keys(grouped || {});
+  const categories = (orderedCategories || Object.keys(grouped || {})).filter(cat => grouped[cat] && grouped[cat].length > 0);
 
   return (
     <section id="skills" className="section" ref={ref}>
@@ -47,9 +40,6 @@ export default function SkillsSection({ grouped, config }: { grouped: Record<str
         <div className="section-header">
           <span className="section-tag fade-in">{config?.title || "Skills & Tech Stack"}</span>
           <h2 className="section-title fade-in delay-1">{config?.subtitle || "What I Work With"}</h2>
-          <p className="section-desc fade-in delay-2">
-            Tools, frameworks, and technologies I use to build quality software.
-          </p>
         </div>
 
         {categories.length === 0 ? (
@@ -66,22 +56,15 @@ export default function SkillsSection({ grouped, config }: { grouped: Record<str
                   <h3 className="skill-cat-title">{cat}</h3>
                   <span className="skill-cat-count">{grouped[cat].length}</span>
                 </div>
-                <div className="skill-list">
-                  {grouped[cat].map((skill) => (
-                    <div key={skill._id} className="skill-item">
-                      <div className="skill-item-header">
-                        <span className="skill-name">{skill.name}</span>
-                        <span className="skill-proficiency">{skill.proficiency}</span>
-                      </div>
-                      <div className="skill-bar-track">
-                        <div
-                          className="skill-bar-fill"
-                          style={{
-                            '--fill-width': `${proficiencyMap[skill.proficiency]}%`,
-                            '--fill-color': categoryColors[cat] || '#00D4FF',
-                          } as React.CSSProperties}
-                        />
-                      </div>
+                <div className="skill-pill-container">
+                  {grouped[cat].map((skill, i) => (
+                    <div
+                      key={skill._id}
+                      className="skill-pill"
+                      style={{ transitionDelay: `${i * 0.05}s` }}
+                    >
+                      {skill.iconUrl && <img src={skill.iconUrl} alt="" className="skill-pill-icon" />}
+                      <span className="skill-pill-name">{skill.name}</span>
                     </div>
                   ))}
                 </div>
@@ -94,62 +77,82 @@ export default function SkillsSection({ grouped, config }: { grouped: Record<str
       <style>{`
         .skills-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+          grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
           gap: 1.5rem;
         }
         .skill-category-card {
-          padding: 1.5rem;
+          padding: 1.75rem;
+          display: flex;
+          flex-direction: column;
         }
         .skill-cat-header {
           display: flex;
           align-items: center;
           gap: 0.6rem;
-          margin-bottom: 1.25rem;
+          margin-bottom: 1.5rem;
+          border-bottom: 1px solid rgba(255,255,255,0.05);
+          padding-bottom: 0.75rem;
         }
         .skill-cat-dot {
           width: 10px; height: 10px;
           border-radius: 50%;
           flex-shrink: 0;
+          box-shadow: 0 0 10px currentColor;
         }
         .skill-cat-title {
-          font-size: 0.95rem;
-          font-weight: 600;
+          font-size: 1rem;
+          font-weight: 700;
           color: var(--color-text-primary);
           flex: 1;
+          letter-spacing: 0.02em;
         }
         .skill-cat-count {
-          font-size: 0.75rem;
+          font-size: 0.7rem;
+          font-weight: 600;
           color: var(--color-text-muted);
-          background: var(--color-bg-card);
+          background: rgba(255,255,255,0.03);
           border: 1px solid var(--color-border);
-          border-radius: var(--radius-full);
-          padding: 0.15rem 0.5rem;
+          border-radius: var(--radius-sm);
+          padding: 0.15rem 0.45rem;
         }
-        .skill-list { display: flex; flex-direction: column; gap: 0.875rem; }
-        .skill-item {}
-        .skill-item-header {
+        .skill-pill-container {
           display: flex;
-          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 0.75rem;
+        }
+        .skill-pill {
+          display: flex;
           align-items: center;
-          margin-bottom: 0.35rem;
+          gap: 0.5rem;
+          padding: 0.5rem 0.85rem;
+          background: rgba(255,255,255,0.03);
+          border: 1px solid var(--color-border);
+          border-radius: var(--radius-md);
+          font-size: 0.85rem;
+          font-weight: 500;
+          color: var(--color-text-secondary);
+          transition: all var(--transition-normal);
+          opacity: 0;
+          transform: translateY(10px);
         }
-        .skill-name { font-size: 0.875rem; color: var(--color-text-primary); font-weight: 500; }
-        .skill-proficiency { font-size: 0.7rem; color: var(--color-text-muted); font-weight: 500; }
-        .skill-bar-track {
-          height: 5px;
-          background: rgba(255,255,255,0.06);
-          border-radius: var(--radius-full);
-          overflow: hidden;
+        .skill-pill.visible {
+          opacity: 1;
+          transform: translateY(0);
         }
-        .skill-bar-fill {
-          height: 100%;
-          width: 0;
-          border-radius: var(--radius-full);
-          background: linear-gradient(90deg, var(--fill-color), color-mix(in srgb, var(--fill-color) 60%, #fff));
-          transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        .skill-pill:hover {
+          background: rgba(0, 212, 255, 0.08);
+          border-color: rgba(0, 212, 255, 0.3);
+          color: var(--color-accent);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
-        .skill-bar-fill.visible {
-          width: var(--fill-width);
+        .skill-pill-icon {
+          width: 16px;
+          height: 16px;
+          object-fit: contain;
+        }
+        @media (max-width: 640px) {
+          .skills-grid { grid-template-columns: 1fr; }
         }
       `}</style>
     </section>

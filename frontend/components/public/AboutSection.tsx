@@ -11,7 +11,7 @@ interface Profile {
   avatarUrl?: string;
 }
 
-export default function AboutSection({ profile, config }: { profile: Profile | null, config?: any }) {
+export default function AboutSection({ profile, config, aboutStats }: { profile: Profile | null, config?: any, aboutStats?: any[] }) {
   const ref = useRef<HTMLDivElement>(null);
 
   const sectionTag = config?.title || "About Me";
@@ -26,8 +26,8 @@ export default function AboutSection({ profile, config }: { profile: Profile | n
     return () => observer.disconnect();
   }, []);
 
-  const stats = [
-    { label: 'Years Experience', value: profile?.yearsOfExperience || '3+' },
+  const stats = aboutStats || [
+    { label: 'Years Experience', value: profile?.yearsOfExperience ? `${profile.yearsOfExperience}+` : '3+' },
     { label: 'Projects Tested', value: '15+' },
     { label: 'Test Cases Written', value: '500+' },
     { label: 'Automation Coverage', value: '80%' },
@@ -46,7 +46,7 @@ export default function AboutSection({ profile, config }: { profile: Profile | n
           <div className="about-visual slide-in-left">
             <div className="about-avatar-wrap">
               {profile?.avatarUrl ? (
-                <img src={profile.avatarUrl} alt={profile.fullName} className="about-avatar" />
+                <img src={profile.avatarUrl} alt={profile?.fullName || 'Profile'} className="about-avatar" />
               ) : (
                 <div className="about-avatar-placeholder">
                   <svg width="80" height="80" fill="none" viewBox="0 0 24 24" stroke="var(--color-accent)" strokeWidth="1.5">
@@ -133,11 +133,17 @@ I specialize in building robust test frameworks and CI/CD pipelines that catch b
           object-fit: cover;
           border: 2px solid var(--color-accent);
           position: relative; z-index: 1;
+          background: radial-gradient(circle, rgba(0,212,255,0.12) 0%, rgba(10,14,23,0) 70%);
+          filter: drop-shadow(0 8px 16px rgba(0,0,0,0.5));
+          transition: transform var(--transition-normal);
+        }
+        .about-avatar:hover {
+          transform: scale(1.02);
         }
         .about-avatar-placeholder {
           width: 200px; height: 200px;
           border-radius: 50%;
-          background: var(--color-bg-card);
+          background: radial-gradient(circle, rgba(0,212,255,0.1) 0%, var(--color-bg-card) 70%);
           border: 2px solid var(--color-accent);
           display: flex; align-items: center; justify-content: center;
           position: relative; z-index: 1;

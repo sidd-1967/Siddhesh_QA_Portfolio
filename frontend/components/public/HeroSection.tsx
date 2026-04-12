@@ -14,6 +14,7 @@ interface Profile {
     website?: string;
   };
   resumeUrl?: string;
+  heroBio?: string;
   openToWork?: boolean;
 }
 
@@ -80,7 +81,7 @@ export default function HeroSection({ profile, config }: { profile: Profile | nu
   const lastName = name.split(' ').slice(1).join(' ');
 
   const titleTemplate = config?.title || "Hi, I'm {name}";
-  const headline = config?.subtitle || profile?.headline || 'QA Engineer | Test Automation Specialist';
+  const headline = profile?.headline || config?.subtitle || 'QA Engineer | Test Automation Specialist';
   
   const github = profile?.socialLinks?.github;
   const linkedin = profile?.socialLinks?.linkedin;
@@ -119,9 +120,7 @@ export default function HeroSection({ profile, config }: { profile: Profile | nu
         <p className="hero-headline fade-in delay-2">{headline}</p>
 
         <p className="hero-bio fade-in delay-3">
-          {profile?.bio
-            ? profile.bio.split('\n')[0]
-            : 'Passionate QA engineer ensuring software quality through meticulous test automation and strategic testing.'}
+          {profile?.heroBio || (profile?.bio ? profile.bio.split('\n')[0] : 'Passionate QA engineer ensuring software quality through meticulous test automation and strategic testing.')}
         </p>
 
         <div className="hero-actions fade-in delay-4">
@@ -139,7 +138,6 @@ export default function HeroSection({ profile, config }: { profile: Profile | nu
               Download CV
             </a>
           )}
-          <a href="#projects" className="btn btn-secondary">View Projects</a>
         </div>
 
         <div className="hero-social fade-in delay-5">
@@ -157,7 +155,7 @@ export default function HeroSection({ profile, config }: { profile: Profile | nu
               </svg>
             </a>
           )}
-          <a href="#contact" className="hero-social-link" aria-label="Email">
+          <a href={`mailto:${profile?.email || ''}`} className="hero-social-link" aria-label="Email">
             <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
             </svg>

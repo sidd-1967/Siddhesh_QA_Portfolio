@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import RichTextEditor from './RichTextEditor';
 
 interface Project {
   _id: string;
@@ -37,8 +38,7 @@ export default function ProjectForm({ initialData, onSubmit, onCancel, loading }
     const errs: Record<string, string> = {};
     if (!form.title.trim()) errs.title = 'Title is required';
     if (form.title.length > 100) errs.title = 'Max 100 characters';
-    if (!form.description.trim()) errs.description = 'Description is required';
-    if (form.description.length > 1000) errs.description = 'Max 1000 characters';
+    if (!form.description || form.description === '<p><br></p>') errs.description = 'Description is required';
     if (form.githubUrl && !/^https?:\/\//.test(form.githubUrl)) errs.githubUrl = 'Must be a valid URL';
     if (form.liveUrl && !/^https?:\/\//.test(form.liveUrl)) errs.liveUrl = 'Must be a valid URL';
     setErrors(errs);
@@ -63,12 +63,14 @@ export default function ProjectForm({ initialData, onSubmit, onCancel, loading }
         {errors.title && <span className="form-error">{errors.title}</span>}
       </div>
 
-      <div className="form-group">
-        <label className="form-label">Description * <small style={{ color: 'var(--color-text-muted)' }}>({form.description.length}/1000)</small></label>
-        <textarea className={`form-textarea${errors.description ? ' input-error' : ''}`} value={form.description}
-          onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Project description" rows={4} />
-        {errors.description && <span className="form-error">{errors.description}</span>}
-      </div>
+      <RichTextEditor
+        label="Description *"
+        value={form.description}
+        onChange={(val) => setForm({ ...form, description: val })}
+        placeholder="Describe the project, tech used, and your contributions..."
+        minHeight={160}
+      />
+      {errors.description && <span className="form-error">{errors.description}</span>}
 
       <div className="form-group">
         <label className="form-label">Tech Stack <small style={{ color: 'var(--color-text-muted)' }}>(comma-separated)</small></label>

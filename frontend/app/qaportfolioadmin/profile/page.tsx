@@ -13,6 +13,7 @@ interface Profile {
   avatarUrl?: string;
   resumeUrl?: string;
   yearsOfExperience?: number;
+  heroBio?: string;
   openToWork: boolean;
   socialLinks?: {
     linkedin?: string;
@@ -105,9 +106,15 @@ export default function AdminProfilePage() {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Bio</label>
+            <label className="form-label">Bio (Main About Me)</label>
             <textarea className="form-textarea" rows={5} value={form.bio || ''}
-              onChange={(e) => setForm({ ...form, bio: e.target.value })} placeholder="Write a short bio about yourself..." />
+              onChange={(e) => setForm({ ...form, bio: e.target.value })} placeholder="Write a detailed bio..." />
+          </div>
+          
+          <div className="form-group">
+            <label className="form-label">Hero Description (Short summary for the first section)</label>
+            <textarea className="form-textarea" rows={3} value={form.heroBio || ''}
+              onChange={(e) => setForm({ ...form, heroBio: e.target.value })} placeholder="QA Engineer with 3+ years experience..." />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
@@ -123,7 +130,7 @@ export default function AdminProfilePage() {
             </div>
             <div className="form-group">
               <label className="form-label">Years of Experience</label>
-              <input type="number" className="form-input" value={form.yearsOfExperience || ''}
+              <input type="number" step="0.1" className="form-input" value={form.yearsOfExperience || ''}
                 onChange={(e) => setForm({ ...form, yearsOfExperience: Number(e.target.value) })} min={0} />
             </div>
           </div>
@@ -131,7 +138,7 @@ export default function AdminProfilePage() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div className="form-group">
               <ImageUpload
-                label="Profile Image (PNG)"
+                label="Profile Image"
                 value={form.avatarUrl}
                 onChange={(url) => setForm({ ...form, avatarUrl: url })}
               />

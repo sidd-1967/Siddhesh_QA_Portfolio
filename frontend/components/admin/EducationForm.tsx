@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import RichTextEditor from './RichTextEditor';
 
 interface Education {
   _id: string;
@@ -92,11 +93,13 @@ export default function EducationForm({ initialData, onSubmit, onCancel, loading
         </div>
       </div>
 
-      <div className="form-group">
-        <label className="form-label">Notes / Description</label>
-        <textarea className="form-textarea" value={form.description} rows={3}
-          onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Optional details..." />
-      </div>
+      <RichTextEditor
+        label="Notes / Description"
+        value={form.description}
+        onChange={(val) => setForm({ ...form, description: val })}
+        placeholder="Optional: achievements, activities, relevant coursework..."
+        minHeight={140}
+      />
 
       <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
         <button type="button" className="btn btn-secondary" onClick={onCancel}>Cancel</button>

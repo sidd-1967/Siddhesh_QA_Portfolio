@@ -8,6 +8,7 @@ export interface ISectionHeader {
 export interface ISettings extends Document {
   skillCategories: string[];
   skillProficiencies: string[];
+  aboutStats: { label: string, value: string }[];
   sectionHeaders: {
     hero: ISectionHeader;
     about: ISectionHeader;
@@ -45,6 +46,15 @@ const SettingsSchema = new Schema<ISettings>(
   {
     skillCategories: { type: [String], default: ['Testing', 'Automation', 'Languages', 'Tools', 'Frameworks', 'CI/CD', 'Cloud', 'Databases', 'Other'] },
     skillProficiencies: { type: [String], default: ['Beginner', 'Intermediate', 'Advanced', 'Expert'] },
+    aboutStats: {
+      type: [{ label: String, value: String }],
+      default: [
+        { label: 'Years Experience', value: '3+' },
+        { label: 'Projects Tested', value: '15+' },
+        { label: 'Test Cases Written', value: '500+' },
+        { label: 'Automation Coverage', value: '80%' }
+      ]
+    },
     sectionHeaders: {
       hero: { type: SectionHeaderSchema, default: { title: 'Hi, I\'m {name}', subtitle: 'QA Engineer | Test Automation Specialist' } },
       about: { type: SectionHeaderSchema, default: { title: 'Passion for Quality', subtitle: 'About Me' } },

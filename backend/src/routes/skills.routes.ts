@@ -6,13 +6,10 @@ import { handleValidationErrors } from '../middleware/validate.middleware';
 
 const router = Router();
 
-const CATEGORIES = ['Testing', 'Automation', 'Languages', 'Tools', 'Frameworks', 'Cloud', 'CI/CD', 'Databases', 'Other'];
-const PROFICIENCIES = ['Beginner', 'Intermediate', 'Advanced', 'Expert'];
-
 const skillValidation = [
   body('name').trim().notEmpty().withMessage('Skill name is required').isLength({ max: 80 }),
-  body('category').isIn(CATEGORIES).withMessage(`Category must be one of: ${CATEGORIES.join(', ')}`),
-  body('proficiency').isIn(PROFICIENCIES).withMessage(`Proficiency must be one of: ${PROFICIENCIES.join(', ')}`),
+  body('category').trim().notEmpty().withMessage('Category is required').isLength({ max: 80 }),
+  body('proficiency').optional({ checkFalsy: true }).isString(),
   body('iconUrl').optional({ checkFalsy: true }).isURL().withMessage('Must be a valid URL'),
   body('order').optional().isInt({ min: 0 }),
 ];

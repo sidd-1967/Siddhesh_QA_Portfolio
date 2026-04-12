@@ -15,6 +15,12 @@ interface Experience {
 
 function formatDate(d?: string | null) {
   if (!d) return 'Present';
+  // Handle YYYY-MM format
+  if (/^\d{4}-(0[1-9]|1[0-2])$/.test(d)) {
+    const [year, month] = d.split('-');
+    return new Date(parseInt(year), parseInt(month) - 1, 1)
+      .toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  }
   return new Date(d).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
 }
 

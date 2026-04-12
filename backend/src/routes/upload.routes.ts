@@ -20,7 +20,7 @@ const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: 'qa_portfolio_uploads',
-    allowed_formats: ['png'],
+    allowed_formats: ['png', 'jpg', 'jpeg', 'webp'],
     public_id: (_req: any, file: any) => {
       const name = file.originalname.split('.')[0];
       return `${Date.now()}-${name}`;
@@ -28,12 +28,12 @@ const storage = new CloudinaryStorage({
   } as any,
 });
 
-// Filter for PNG files only as requested by user
 const fileFilter = (_req: any, file: any, cb: any) => {
-  if (file.mimetype === 'image/png') {
+  const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+  if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error('Only .png format allowed!'), false);
+    cb(new Error('Only .png, .jpg, .jpeg and .webp format allowed!'), false);
   }
 };
 

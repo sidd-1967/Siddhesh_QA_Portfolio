@@ -18,6 +18,7 @@ export interface IProfile extends Document {
   resumeUrl?: string;
   socialLinks: ISocialLinks;
   yearsOfExperience?: number;
+  heroBio?: string;
   openToWork: boolean;
 }
 
@@ -38,6 +39,7 @@ const ProfileSchema = new Schema<IProfile>(
       website: { type: String, trim: true },
     },
     yearsOfExperience: { type: Number, min: 0 },
+    heroBio: { type: String, trim: true, maxlength: 500 },
     openToWork: { type: Boolean, default: false },
   },
   { timestamps: true }
