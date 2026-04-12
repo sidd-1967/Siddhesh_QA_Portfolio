@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef } from 'react';
+import Image from 'next/image';
 
 interface Profile {
   fullName: string;
@@ -46,7 +47,7 @@ export default function AboutSection({ profile, config, aboutStats }: { profile:
           <div className="about-visual slide-in-left">
             <div className="about-avatar-wrap">
               {profile?.avatarUrl ? (
-                <img src={profile.avatarUrl} alt={profile?.fullName || 'Profile'} className="about-avatar" />
+                <Image src={profile.avatarUrl} alt={profile?.fullName || 'Profile'} className="about-avatar" width={200} height={200} />
               ) : (
                 <div className="about-avatar-placeholder">
                   <svg width="80" height="80" fill="none" viewBox="0 0 24 24" stroke="var(--color-accent)" strokeWidth="1.5">

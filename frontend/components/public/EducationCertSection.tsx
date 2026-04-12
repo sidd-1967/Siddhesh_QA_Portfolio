@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef } from 'react';
+import Image from 'next/image';
 
 interface Education {
   _id: string;
@@ -78,7 +79,7 @@ export default function EducationCertSection({ education, certifications, config
                 <div key={edu._id} className={`edu-card card fade-in delay-${Math.min(i + 1, 3)}`}>
                   <div className="edu-icon" aria-hidden="true">
                     {edu.logoUrl ? (
-                      <img src={edu.logoUrl} alt={edu.institution} style={{ width: 40, height: 40, objectFit: 'contain' }} />
+                      <Image src={edu.logoUrl} alt={edu.institution} width={40} height={40} style={{ objectFit: 'contain' }} />
                     ) : (
                       <svg width="28" height="28" fill="none" stroke="var(--color-accent)" strokeWidth="1.5" viewBox="0 0 24 24">
                         <path d="M12 14l9-5-9-5-9 5 9 5z"/>
@@ -130,7 +131,7 @@ export default function EducationCertSection({ education, certifications, config
                       style={{ background: `${getIssuerColor(cert.issuer)}18`, border: `1px solid ${getIssuerColor(cert.issuer)}33` }}
                     >
                       {cert.badgeUrl ? (
-                        <img src={cert.badgeUrl} alt={cert.name} style={{ width: 40, height: 40, objectFit: 'contain' }} />
+                        <Image src={cert.badgeUrl} alt={cert.name} width={40} height={40} style={{ objectFit: 'contain' }} />
                       ) : (
                         <svg width="28" height="28" fill="none" stroke={getIssuerColor(cert.issuer)} strokeWidth="1.5" viewBox="0 0 24 24">
                           <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>

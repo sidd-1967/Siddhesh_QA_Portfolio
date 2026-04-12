@@ -19,17 +19,26 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 
   return {
+    metadataBase: new URL(AppConfig.app.url),
     title: name,
     description: AppConfig.app.description,
     authors: [{ name: AppConfig.app.author }],
     keywords: [
       'QA Engineer', 'Test Automation', 'Selenium', 'Cypress', 'Playwright',
-      'Software Testing', 'ISTQB', 'API Testing', 'Portfolio'
+      'Software Testing', 'ISTQB', 'API Testing', 'Portfolio', 'Quality Assurance'
     ],
     openGraph: {
       title: name,
       description: AppConfig.app.description,
       type: 'website',
+      url: AppConfig.app.url,
+      siteName: name,
+      locale: 'en_US',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: name,
+      description: AppConfig.app.description,
     },
   };
 }

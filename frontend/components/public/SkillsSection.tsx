@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef } from 'react';
+import Image from 'next/image';
 
 interface Skill {
   _id: string;
@@ -63,7 +64,7 @@ export default function SkillsSection({ grouped, config, categories: orderedCate
                       className="skill-pill"
                       style={{ transitionDelay: `${i * 0.05}s` }}
                     >
-                      {skill.iconUrl && <img src={skill.iconUrl} alt="" className="skill-pill-icon" />}
+                      {skill.iconUrl && <Image src={skill.iconUrl} alt="" className="skill-pill-icon" width={16} height={16} />}
                       <span className="skill-pill-name">{skill.name}</span>
                     </div>
                   ))}

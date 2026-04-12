@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef } from 'react';
+import Image from 'next/image';
 
 interface Experience {
   _id: string;
@@ -70,7 +71,7 @@ export default function ExperienceSection({ experience, config }: { experience: 
                   <div className="exp-header">
                     <div className="exp-logo-col">
                       {exp.companyLogo ? (
-                        <img src={exp.companyLogo} alt={exp.company} className="exp-logo" />
+                        <Image src={exp.companyLogo} alt={exp.company} className="exp-logo" width={48} height={48} />
                       ) : (
                         <div className="exp-logo exp-logo--fallback">
                           {exp.company.charAt(0).toUpperCase()}

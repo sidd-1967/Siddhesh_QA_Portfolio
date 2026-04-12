@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef } from 'react';
+import Image from 'next/image';
 
 interface Project {
   _id: string;
@@ -45,7 +46,7 @@ export default function ProjectsSection({ projects, config }: { projects: Projec
 
                 {project.imageUrl && (
                   <div className="project-image">
-                    <img src={project.imageUrl} alt={project.title} />
+                    <Image src={project.imageUrl} alt={project.title} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
                   </div>
                 )}
 
@@ -126,6 +127,7 @@ export default function ProjectsSection({ projects, config }: { projects: Projec
         .project-image {
           height: 180px;
           overflow: hidden;
+          position: relative;
         }
         .project-image img {
           width: 100%; height: 100%;

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
-import { CloudinaryStorage } from 'multer-storage-cloudinary';
+const cloudinaryStorage = require('multer-storage-cloudinary');
 import { authMiddleware } from '../middleware/auth.middleware';
 import { asyncHandler } from '../utils/asyncHandler';
 import { config } from '../config/config';
@@ -16,16 +16,14 @@ cloudinary.config({
 });
 
 // Set up Cloudinary Storage for Multer
-const storage = new CloudinaryStorage({
+const storage = cloudinaryStorage({
   cloudinary: cloudinary,
-  params: {
-    folder: 'qa_portfolio_uploads',
-    allowed_formats: ['png', 'jpg', 'jpeg', 'webp'],
-    public_id: (_req: any, file: any) => {
-      const name = file.originalname.split('.')[0];
-      return `${Date.now()}-${name}`;
-    },
-  } as any,
+  folder: 'qa_portfolio_uploads',
+  allowedFormats: ['png', 'jpg', 'jpeg', 'webp'],
+  filename: function (_req: any, file: any, cb: any) {
+    const name = file.originalname.split('.')[0];
+    cb(undefined, `${Date.now()}-${name}`);
+  }
 });
 
 const fileFilter = (_req: any, file: any, cb: any) => {
