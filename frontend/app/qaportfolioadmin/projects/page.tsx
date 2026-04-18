@@ -6,14 +6,18 @@ import { adminAPI } from '@/lib/api';
 interface Project {
   _id: string;
   title: string;
+  company?: string;
+  domain?: string;
+  period?: string;
   description: string;
+  topMetric?: string;
   techStack: string[];
   featured: boolean;
   order: number;
 }
 
-// Strip HTML tags AND decode entities (e.g. &nbsp;) using DOMParser
-function stripHtml(html: string, maxLen = 80): string {
+// Strip HTML tags and decode entities
+function stripHtml(html: string, maxLen = 70): string {
   if (!html) return '—';
   try {
     const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -33,9 +37,12 @@ export default function AdminProjectsPage() {
       updateFn={(id, data) => adminAPI.updateProject(id, data)}
       deleteFn={(id) => adminAPI.deleteProject(id)}
       columns={[
-        { key: 'title', label: 'Title' },
-        { key: 'description', label: 'Description', render: (r) => stripHtml(r.description) },
-        { key: 'techStack', label: 'Tech Stack' },
+        { key: 'company', label: 'Company', render: (r) => r.company || '—' },
+        { key: 'title', label: 'Hook (Title)' },
+        { key: 'domain', label: 'Domain', render: (r) => r.domain || '—' },
+        { key: 'period', label: 'Period', render: (r) => r.period || '—' },
+        { key: 'topMetric', label: 'Top Metric', render: (r) => stripHtml(r.topMetric || '') },
+        { key: 'techStack', label: 'Tags' },
         { key: 'featured', label: 'Featured' },
         { key: 'order', label: 'Order' },
       ]}

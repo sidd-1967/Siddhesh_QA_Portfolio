@@ -11,6 +11,7 @@ interface Education {
   startYear: number;
   endYear?: number | null;
   grade?: string;
+  location?: string;
 }
 
 export default function AdminEducationPage() {
@@ -25,6 +26,7 @@ export default function AdminEducationPage() {
         { key: 'institution', label: 'Institution' },
         { key: 'degree', label: 'Degree' },
         { key: 'field', label: 'Field' },
+        { key: 'location', label: 'Location' },
         { key: 'startYear', label: 'Start Year' },
         { key: 'endYear', label: 'End Year', render: (r) => r.endYear ? String(r.endYear) : 'Present' },
         { key: 'grade', label: 'Grade' },

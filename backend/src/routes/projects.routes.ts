@@ -8,10 +8,16 @@ const router = Router();
 
 const projectValidation = [
   body('title').trim().notEmpty().withMessage('Title is required').isLength({ max: 100 }).withMessage('Max 100 chars'),
-  body('description').trim().notEmpty().withMessage('Description is required').isLength({ max: 1000 }).withMessage('Max 1000 chars'),
+  body('company').optional().trim().isLength({ max: 150 }),
+  body('domain').optional().trim().isLength({ max: 100 }),
+  body('period').optional().trim().isLength({ max: 100 }),
+  body('description').trim().notEmpty().withMessage('Description is required').isLength({ max: 2000 }).withMessage('Max 2000 chars'),
+  body('topMetric').optional().trim().isLength({ max: 200 }),
+  body('achievements').optional().isArray().withMessage('achievements must be an array'),
   body('techStack').optional().isArray().withMessage('techStack must be an array'),
   body('githubUrl').optional({ checkFalsy: true }).isURL().withMessage('Must be a valid URL'),
   body('liveUrl').optional({ checkFalsy: true }).isURL().withMessage('Must be a valid URL'),
+  body('testReportUrl').optional({ checkFalsy: true }).isURL().withMessage('Must be a valid URL'),
   body('featured').optional().isBoolean().withMessage('featured must be boolean'),
   body('order').optional().isInt({ min: 0 }).withMessage('order must be a positive integer'),
 ];
@@ -24,6 +30,7 @@ router.get('/', asyncHandler(async (req, res) => {
   if (search) {
     query.$or = [
       { title: { $regex: search, $options: 'i' } },
+      { company: { $regex: search, $options: 'i' } },
       { description: { $regex: search, $options: 'i' } },
     ];
   }

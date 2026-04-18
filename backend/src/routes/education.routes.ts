@@ -20,6 +20,7 @@ const educationValidation = [
       return true;
     }),
   body('grade').optional().trim().isLength({ max: 50 }),
+  body('location').optional().trim().isLength({ max: 200 }),
 ];
 
 router.get('/', asyncHandler(async (req, res) => {

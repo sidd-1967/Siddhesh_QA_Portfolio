@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import RichTextEditor from './RichTextEditor';
+import ImageUpload from './ImageUpload';
 
 interface Education {
   _id: string;
@@ -10,7 +11,9 @@ interface Education {
   startYear: number;
   endYear?: number | null;
   grade?: string;
+  location?: string;
   description?: string;
+  logoUrl?: string;
 }
 
 interface Props {
@@ -28,7 +31,9 @@ export default function EducationForm({ initialData, onSubmit, onCancel, loading
     startYear: initialData?.startYear || new Date().getFullYear(),
     endYear: initialData?.endYear || '',
     grade: initialData?.grade || '',
+    location: initialData?.location || '',
     description: initialData?.description || '',
+    logoUrl: initialData?.logoUrl || '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -52,45 +57,90 @@ export default function EducationForm({ initialData, onSubmit, onCancel, loading
 
   return (
     <form onSubmit={handleSubmit} noValidate>
+      <ImageUpload
+        label="Institution Logo"
+        value={form.logoUrl}
+        onChange={(url) => setForm({ ...form, logoUrl: url })}
+      />
+
       <div className="form-group">
         <label className="form-label">Institution *</label>
-        <input className={`form-input${errors.institution ? ' input-error' : ''}`} value={form.institution}
-          onChange={(e) => setForm({ ...form, institution: e.target.value })} placeholder="University / College" />
+        <input
+          className={`form-input${errors.institution ? ' input-error' : ''}`}
+          value={form.institution}
+          onChange={(e) => setForm({ ...form, institution: e.target.value })}
+          placeholder="University / College"
+        />
         {errors.institution && <span className="form-error">{errors.institution}</span>}
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
         <div className="form-group">
           <label className="form-label">Degree *</label>
-          <input className={`form-input${errors.degree ? ' input-error' : ''}`} value={form.degree}
-            onChange={(e) => setForm({ ...form, degree: e.target.value })} placeholder="B.E., MBA, etc." />
+          <input
+            className={`form-input${errors.degree ? ' input-error' : ''}`}
+            value={form.degree}
+            onChange={(e) => setForm({ ...form, degree: e.target.value })}
+            placeholder="B.E., MBA, MCA etc."
+          />
           {errors.degree && <span className="form-error">{errors.degree}</span>}
         </div>
         <div className="form-group">
           <label className="form-label">Field of Study</label>
-          <input className="form-input" value={form.field}
-            onChange={(e) => setForm({ ...form, field: e.target.value })} placeholder="Computer Engineering" />
+          <input
+            className="form-input"
+            value={form.field}
+            onChange={(e) => setForm({ ...form, field: e.target.value })}
+            placeholder="Computer Science"
+          />
         </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
         <div className="form-group">
           <label className="form-label">Start Year *</label>
-          <input type="number" className={`form-input${errors.startYear ? ' input-error' : ''}`} value={form.startYear}
-            onChange={(e) => setForm({ ...form, startYear: Number(e.target.value) })} min={1950} max={2100} />
+          <input
+            type="number"
+            className={`form-input${errors.startYear ? ' input-error' : ''}`}
+            value={form.startYear}
+            onChange={(e) => setForm({ ...form, startYear: Number(e.target.value) })}
+            min={1950}
+            max={2100}
+          />
           {errors.startYear && <span className="form-error">{errors.startYear}</span>}
         </div>
         <div className="form-group">
           <label className="form-label">End Year</label>
-          <input type="number" className={`form-input${errors.endYear ? ' input-error' : ''}`} value={form.endYear}
-            onChange={(e) => setForm({ ...form, endYear: e.target.value })} min={1950} max={2100} placeholder="or blank" />
+          <input
+            type="number"
+            className={`form-input${errors.endYear ? ' input-error' : ''}`}
+            value={form.endYear}
+            onChange={(e) => setForm({ ...form, endYear: e.target.value })}
+            min={1950}
+            max={2100}
+            placeholder="or blank"
+          />
           {errors.endYear && <span className="form-error">{errors.endYear}</span>}
         </div>
         <div className="form-group">
           <label className="form-label">Grade / GPA</label>
-          <input className="form-input" value={form.grade}
-            onChange={(e) => setForm({ ...form, grade: e.target.value })} placeholder="8.0 CGPA" />
+          <input
+            className="form-input"
+            value={form.grade}
+            onChange={(e) => setForm({ ...form, grade: e.target.value })}
+            placeholder="8.0 CGPA"
+          />
         </div>
+      </div>
+
+      <div className="form-group">
+        <label className="form-label">Location</label>
+        <input
+          className="form-input"
+          value={form.location}
+          onChange={(e) => setForm({ ...form, location: e.target.value })}
+          placeholder="City, State / Country"
+        />
       </div>
 
       <RichTextEditor
@@ -103,7 +153,9 @@ export default function EducationForm({ initialData, onSubmit, onCancel, loading
 
       <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
         <button type="button" className="btn btn-secondary" onClick={onCancel}>Cancel</button>
-        <button type="submit" className="btn btn-primary" disabled={loading}>{loading ? 'Saving...' : 'Save'}</button>
+        <button type="submit" className="btn btn-primary" disabled={loading}>
+          {loading ? 'Saving...' : 'Save'}
+        </button>
       </div>
       <style>{`.input-error { border-color: var(--color-error) !important; }`}</style>
     </form>

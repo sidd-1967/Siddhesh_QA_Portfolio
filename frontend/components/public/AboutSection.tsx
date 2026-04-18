@@ -47,7 +47,7 @@ export default function AboutSection({ profile, config, aboutStats }: { profile:
           <div className="about-visual slide-in-left">
             <div className="about-avatar-wrap">
               {profile?.avatarUrl ? (
-                <Image src={profile.avatarUrl} alt={profile?.fullName || 'Profile'} className="about-avatar" width={200} height={200} />
+                <Image src={profile.avatarUrl} alt={profile?.fullName || 'Profile'} className="about-avatar" width={240} height={240} />
               ) : (
                 <div className="about-avatar-placeholder">
                   <svg width="80" height="80" fill="none" viewBox="0 0 24 24" stroke="var(--color-accent)" strokeWidth="1.5">
@@ -126,10 +126,10 @@ I specialize in building robust test frameworks and CI/CD pipelines that catch b
         }
         .about-avatar-wrap {
           position: relative;
-          width: 220px; height: 220px;
+          width: 260px; height: 260px;
         }
         .about-avatar {
-          width: 200px; height: 200px;
+          width: 240px; height: 240px;
           border-radius: 50%;
           object-fit: cover;
           border: 2px solid var(--color-accent);
@@ -142,7 +142,7 @@ I specialize in building robust test frameworks and CI/CD pipelines that catch b
           transform: scale(1.02);
         }
         .about-avatar-placeholder {
-          width: 200px; height: 200px;
+          width: 240px; height: 240px;
           border-radius: 50%;
           background: radial-gradient(circle, rgba(0,212,255,0.1) 0%, var(--color-bg-card) 70%);
           border: 2px solid var(--color-accent);

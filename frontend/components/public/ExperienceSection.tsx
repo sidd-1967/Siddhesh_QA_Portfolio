@@ -71,7 +71,7 @@ export default function ExperienceSection({ experience, config }: { experience: 
                   <div className="exp-header">
                     <div className="exp-logo-col">
                       {exp.companyLogo ? (
-                        <Image src={exp.companyLogo} alt={exp.company} className="exp-logo" width={48} height={48} />
+                        <Image src={exp.companyLogo} alt={exp.company} className="exp-logo" width={64} height={64} />
                       ) : (
                         <div className="exp-logo exp-logo--fallback">
                           {exp.company.charAt(0).toUpperCase()}
@@ -227,17 +227,17 @@ export default function ExperienceSection({ experience, config }: { experience: 
         }
         .exp-logo-col { flex-shrink: 0; }
         .exp-logo {
-          width: 48px; height: 48px;
-          border-radius: 12px;
+          width: 64px; height: 64px;
+          border-radius: 14px;
           object-fit: contain;
           background: white;
-          padding: 4px;
+          padding: 6px;
           border: 1px solid var(--color-border);
         }
         .exp-logo--fallback {
           background: linear-gradient(135deg, var(--color-accent), var(--color-accent-2));
           color: var(--color-bg);
-          font-size: 1.25rem;
+          font-size: 1.75rem;
           font-weight: 800;
           display: flex; align-items: center; justify-content: center;
           padding: 0;

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
-const cloudinaryStorage = require('multer-storage-cloudinary');
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import { authMiddleware } from '../middleware/auth.middleware';
 import { asyncHandler } from '../utils/asyncHandler';
 import { config } from '../config/config';
@@ -15,15 +15,17 @@ cloudinary.config({
   api_secret: config.cloudinary.apiSecret,
 });
 
-// Set up Cloudinary Storage for Multer
-const storage = cloudinaryStorage({
+// Set up Cloudinary Storage for Multer (using v4 syntax)
+const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
-  folder: 'qa_portfolio_uploads',
-  allowedFormats: ['png', 'jpg', 'jpeg', 'webp'],
-  filename: function (_req: any, file: any, cb: any) {
-    const name = file.originalname.split('.')[0];
-    cb(undefined, `${Date.now()}-${name}`);
-  }
+  params: {
+    folder: 'qa_portfolio_uploads',
+    allowed_formats: ['png', 'jpg', 'jpeg', 'webp'],
+    public_id: (_req: any, file: any) => {
+      const name = file.originalname.split('.')[0];
+      return `${Date.now()}-${name}`;
+    },
+  } as any, // Cast to any because of peer dependency type mismatch
 });
 
 const fileFilter = (_req: any, file: any, cb: any) => {

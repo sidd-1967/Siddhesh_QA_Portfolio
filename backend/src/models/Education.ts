@@ -7,6 +7,7 @@ export interface IEducation extends Document {
   startYear: number;
   endYear?: number | null;
   grade?: string;
+  location?: string;
   description?: string;
   logoUrl?: string;
 }
@@ -19,6 +20,7 @@ const EducationSchema = new Schema<IEducation>(
     startYear: { type: Number, required: true, min: 1950, max: 2100 },
     endYear: { type: Number, default: null, min: 1950, max: 2100 },
     grade: { type: String, trim: true, maxlength: 50 },
+    location: { type: String, trim: true, maxlength: 200 },
     description: { type: String, trim: true, maxlength: 1000 },
     logoUrl: { type: String, trim: true },
   },

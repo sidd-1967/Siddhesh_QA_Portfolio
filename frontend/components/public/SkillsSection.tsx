@@ -64,7 +64,7 @@ export default function SkillsSection({ grouped, config, categories: orderedCate
                       className="skill-pill"
                       style={{ transitionDelay: `${i * 0.05}s` }}
                     >
-                      {skill.iconUrl && <Image src={skill.iconUrl} alt="" className="skill-pill-icon" width={16} height={16} />}
+                      {skill.iconUrl && <Image src={skill.iconUrl} alt="" className="skill-pill-icon" width={24} height={24} />}
                       <span className="skill-pill-name">{skill.name}</span>
                     </div>
                   ))}
@@ -148,8 +148,8 @@ export default function SkillsSection({ grouped, config, categories: orderedCate
           box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
         .skill-pill-icon {
-          width: 16px;
-          height: 16px;
+          width: 24px;
+          height: 24px;
           object-fit: contain;
         }
         @media (max-width: 640px) {
