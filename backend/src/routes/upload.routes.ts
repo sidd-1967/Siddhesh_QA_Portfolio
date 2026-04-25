@@ -15,17 +15,17 @@ cloudinary.config({
   api_secret: config.cloudinary.apiSecret,
 });
 
-// Set up Cloudinary Storage for Multer (using v4 syntax)
+// Set up Cloudinary Storage for Multer
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: 'qa_portfolio_uploads',
     allowed_formats: ['png', 'jpg', 'jpeg', 'webp'],
     public_id: (_req: any, file: any) => {
-      const name = file.originalname.split('.')[0];
+      const name = file.originalname.split('.')[0] || 'upload';
       return `${Date.now()}-${name}`;
     },
-  } as any, // Cast to any because of peer dependency type mismatch
+  } as any,
 });
 
 const fileFilter = (_req: any, file: any, cb: any) => {
@@ -41,18 +41,42 @@ const upload = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 2 * 1024 * 1024, // 2MB limit
+    fileSize: 5 * 1024 * 1024, // Increased to 5MB for better UX, but still safe
   },
-});
+}).single('file');
 
-router.post('/', authMiddleware, upload.single('file'), asyncHandler(async (req, res) => {
+// Custom error handling wrapper for multer
+const uploadMiddleware = (req: any, res: any, next: any) => {
+  upload(req, res, (err: any) => {
+    if (err instanceof multer.MulterError) {
+      console.error('[UPLOAD ERROR] Multer Error:', err);
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ success: false, message: 'File too large. Max size is 5MB.' });
+      }
+      return res.status(400).json({ success: false, message: `Upload error: ${err.message}` });
+    } else if (err) {
+      console.error('[UPLOAD ERROR] General Error:', err);
+      return res.status(500).json({ success: false, message: err.message });
+    }
+    next();
+  });
+};
+
+router.post('/', authMiddleware, uploadMiddleware, asyncHandler(async (req, res) => {
+  if (!config.cloudinary.cloudName || !config.cloudinary.apiKey || !config.cloudinary.apiSecret) {
+    console.error('[UPLOAD ERROR] Cloudinary configuration missing');
+    res.status(500).json({ success: false, message: 'Cloudinary configuration is missing' });
+    return;
+  }
+
   if (!req.file) {
     res.status(400).json({ success: false, message: 'No file uploaded' });
     return;
   }
 
-  // With Cloudinary, path/filename is the secure_url
+  // With Cloudinary, path is the secure_url
   const fileUrl = (req.file as any).path;
+  console.log('[UPLOAD SUCCESS] File uploaded to:', fileUrl);
   res.json({ success: true, data: { url: fileUrl } });
 }));
 
