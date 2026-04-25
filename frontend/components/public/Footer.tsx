@@ -4,7 +4,7 @@ export default function Footer({ name }: { name: string }) {
     <footer className="footer">
       <div className="container footer-inner">
         <p className="footer-text">
-          © {year} <span className="gradient-text">{name}</span>. Built with Next.js & Express.
+          © {year} <span className="gradient-text">{name}</span>
         </p>
         <p className="footer-sub">QA Engineer Portfolio</p>
       </div>
