@@ -52,7 +52,7 @@ export default function NavBar({ profile, config }: { profile: any, config?: any
     setMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     if (window.location.hash) {
-      window.history.pushState('', document.title, window.location.pathname + window.location.search);
+      window.history.pushState(null, '', window.location.pathname + window.location.search);
     }
   };
 

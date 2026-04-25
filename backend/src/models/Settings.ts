@@ -4,6 +4,7 @@ export interface ISectionHeader {
   title: string;
   subtitle: string;
   enabled?: boolean;
+  marqueeSpeed?: number;
 }
 
 export interface ISettings extends Document {
@@ -33,7 +34,8 @@ export interface ISettings extends Document {
 const SectionHeaderSchema = new Schema({
   title: { type: String, required: true },
   subtitle: { type: String, default: '' },
-  enabled: { type: Boolean, default: true }
+  enabled: { type: Boolean, default: true },
+  marqueeSpeed: { type: Number, default: 50 }
 }, { _id: false });
 
 const ContactHeaderSchema = new Schema({

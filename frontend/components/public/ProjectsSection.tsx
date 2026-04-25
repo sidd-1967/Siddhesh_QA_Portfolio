@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import Image from 'next/image';
 
 interface Project {
@@ -20,7 +20,6 @@ interface Project {
 }
 
 function highlightMetric(text: string) {
-  // Bold any number/percentage/metric inside the string with success color
   return text.replace(
     /(\d+[\d,]*%?|\d+\/\d+|↑\d+|↓\d+|zero|100%|0\s+P\d+)/gi,
     '<strong class="metric-num">$1</strong>'
@@ -29,608 +28,275 @@ function highlightMetric(text: string) {
 
 export default function ProjectsSection({ projects, config }: { projects: Project[]; config?: any }) {
   const ref = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
   const [activeProject, setActiveProject] = useState<Project | null>(null);
-  const [showAll, setShowAll] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
 
-  const VISIBLE_COUNT = 3;
-  const featured = projects.filter((p) => p.featured);
-  const rest = projects.filter((p) => !p.featured);
-  // Featured first, then rest
-  const sorted = [...featured, ...rest];
-  const visible = showAll ? sorted : sorted.slice(0, VISIBLE_COUNT);
-  const hidden = sorted.slice(VISIBLE_COUNT);
+  const sortedProjects = useMemo(() => {
+    return [...projects].sort((a, b) => (a.featured === b.featured ? 0 : a.featured ? -1 : 1));
+  }, [projects]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => entries.forEach((e) => e.target.classList.toggle('visible', e.isIntersecting)),
-      { threshold: 0.06 }
+      (entries) => entries.forEach((e) => {
+        if (e.isIntersecting) e.target.classList.add('visible');
+      }),
+      { threshold: 0.05 }
     );
     ref.current?.querySelectorAll('.fade-in').forEach((el) => observer.observe(el));
     return () => observer.disconnect();
-  }, [projects]);
+  }, [sortedProjects]);
 
-  // Lock body scroll when drawer open
   useEffect(() => {
-    document.body.style.overflow = activeProject ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
+    if (activeProject) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
   }, [activeProject]);
+
+  const handleScroll = () => {
+    if (gridRef.current) {
+      const scrollLeft = gridRef.current.scrollLeft;
+      const width = gridRef.current.offsetWidth;
+      const index = Math.round(scrollLeft / width);
+      setActiveIndex(index);
+    }
+  };
 
   return (
     <section id="projects" className="section" ref={ref}>
       <div className="container">
         <div className="section-header">
-          <span className="section-tag fade-in">{config?.title || 'Work'}</span>
-          <h2 className="section-title fade-in delay-1">{config?.subtitle || 'Projects'}</h2>
+          <span className="section-tag fade-in">{config?.title || 'Portfolio'}</span>
+          <h2 className="section-title fade-in delay-1">{config?.subtitle || 'Real-World Work'}</h2>
         </div>
 
         {projects.length === 0 ? (
           <p style={{ textAlign: 'center', color: 'var(--color-text-muted)' }}>No projects added yet.</p>
         ) : (
-          <>
-            {/* ── 3-col card grid ─────────────────────────────────── */}
-            <div className="proj-grid">
-              {visible.map((project, i) => (
+          <div className="pj-wrapper">
+            <div 
+              className="pj-grid" 
+              ref={gridRef}
+              onScroll={handleScroll}
+            >
+              {sortedProjects.map((project, i) => (
                 <article
                   key={project._id}
-                  className={`proj-card card fade-in delay-${Math.min((i % 3) + 1, 5)}${project.featured ? ' proj-card--featured' : ''}`}
-                  onClick={() => setActiveProject(project)}
-                  tabIndex={0}
-                  onKeyDown={(e) => e.key === 'Enter' && setActiveProject(project)}
-                  aria-label={`View details for ${project.title}`}
+                  className={`pj-card fade-in delay-${(i % 3) + 1} ${project.featured ? 'pj-card--featured' : ''}`}
                 >
-                  {/* featured dot */}
-                  {project.featured && <div className="proj-featured-dot" aria-hidden="true" />}
-
-                  {/* ── thumbnail: company name banner ──────────── */}
-                  <div className="proj-thumbnail">
-                    {project.imageUrl ? (
-                      <Image
-                        src={project.imageUrl}
-                        alt={project.company || project.title}
-                        fill
-                        sizes="(max-width: 768px) 100vw, 33vw"
-                        style={{ objectFit: 'cover' }}
-                      />
-                    ) : (
-                      <span className="proj-thumb-name">
-                        {project.company || project.title}
-                      </span>
-                    )}
+                  {/* Desktop/Tablet View (Image Focused) */}
+                  <div className="pj-card-inner pj-desktop-card">
+                    <div className="pj-image-box">
+                      {project.imageUrl ? (
+                        <Image src={project.imageUrl} alt={project.title} fill sizes="33vw" className="pj-img" />
+                      ) : (
+                        <div className="pj-placeholder"><span>{project.company?.charAt(0) || project.title.charAt(0)}</span></div>
+                      )}
+                      {project.featured && <span className="pj-featured-badge">Featured</span>}
+                    </div>
+                    <div className="pj-content">
+                      <div className="pj-meta">
+                        {project.domain && <span className="pj-domain">{project.domain}</span>}
+                        <h3 className="pj-title">{project.title}</h3>
+                        {project.company && <p className="pj-company">{project.company}</p>}
+                      </div>
+                      <div className="pj-footer">
+                        <div className="pj-tech-mini">
+                          {project.techStack.slice(0, 3).map(t => <span key={t} className="pj-tech-dot" />)}
+                        </div>
+                        <button className="pj-link-btn" onClick={() => setActiveProject(project)}>Details ↗</button>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* ── card body ───────────────────────────────── */}
-                  <div className="proj-card-body">
-                    {/* hook line: domain · what it is */}
-                    <p className="proj-hook">
-                      {project.domain && <><span>{project.domain}</span> · </>}
-                      {project.title}
-                    </p>
-
-                    {/* period */}
-                    {project.period && (
-                      <p className="proj-period">{project.period}</p>
-                    )}
-
-                    {/* top metric — most important, green */}
-                    {project.topMetric && (
-                      <p
-                        className="proj-top-metric"
-                        dangerouslySetInnerHTML={{ __html: highlightMetric(project.topMetric) }}
-                      />
-                    )}
-
-                    {/* tags — testing types only */}
-                    {project.techStack?.length > 0 && (
-                      <div className="proj-tags">
-                        {project.techStack.map((t) => (
-                          <span key={t} className="proj-tag">{t}</span>
-                        ))}
+                  {/* Mobile/Compact View (Dashboard Style) */}
+                  <div className="pj-card-inner pj-compact-card">
+                    <div className="pj-m-header">
+                      <div className="pj-m-header-left">
+                        <span className="pj-m-domain">{project.domain?.toUpperCase() || 'QA PROJECT'}</span>
+                        <span className="pj-m-period">{project.period || '2024'}</span>
                       </div>
-                    )}
-
-                    {/* text link */}
-                    <button className="proj-view-link" tabIndex={-1}>
-                      View details →
-                    </button>
+                      {project.featured && <span className="pj-m-featured">Featured</span>}
+                    </div>
+                    <div className="pj-m-body">
+                      <h3 className="pj-m-title">{project.title}</h3>
+                      {project.topMetric && (
+                        <div className="pj-m-metric"><span className="pj-m-dot" /> {project.topMetric}</div>
+                      )}
+                      <div className="pj-m-footer">
+                        <div className="pj-m-tech">
+                          {project.techStack.slice(0, 1).map(t => <span key={t} className="pj-m-tag">{t}</span>)}
+                          {project.techStack.length > 1 && <span className="pj-m-tag">+{project.techStack.length - 1}</span>}
+                        </div>
+                        <button className="pj-m-details" onClick={() => setActiveProject(project)}>Details →</button>
+                      </div>
+                    </div>
                   </div>
                 </article>
               ))}
             </div>
 
-            {/* ── "X more projects" bar ───────────────────────────── */}
-            {hidden.length > 0 && (
-              <div className="proj-more-bar fade-in delay-3">
-                <div className="proj-more-info">
-                  <span className="proj-more-count">{hidden.length} more project{hidden.length > 1 ? 's' : ''}</span>
-                  <span className="proj-more-names">
-                    {hidden.map((p) => p.company || p.title).join(', ')}
-                  </span>
-                </div>
-                <button className="btn btn-secondary" onClick={() => setShowAll((s) => !s)}>
-                  {showAll ? 'Show less' : 'Show all'}
-                </button>
+            {/* Carousel Indicators (Mobile Only) */}
+            <div className="pj-carousel-ui">
+              <div className="pj-dots">
+                {sortedProjects.map((_, i) => (
+                  <div key={i} className={`pj-dot ${activeIndex === i ? 'active' : ''}`} />
+                ))}
               </div>
-            )}
-          </>
+              <span className="pj-swipe-hint">swipe to see more</span>
+            </div>
+          </div>
         )}
       </div>
 
-      {/* ── Side drawer ──────────────────────────────────────────── */}
+      {/* Side Drawer */}
       {activeProject && (
         <>
-          <div
-            className="proj-overlay"
-            onClick={() => setActiveProject(null)}
-            aria-hidden="true"
-          />
-          <aside className="proj-drawer" role="dialog" aria-modal="true" aria-label="Project details">
-            <button
-              className="proj-drawer-close"
-              onClick={() => setActiveProject(null)}
-              aria-label="Close"
-            >
-              ✕
+          <div className="pj-overlay" onClick={() => setActiveProject(null)} />
+          <aside className="pj-drawer">
+            <button className="pj-close" onClick={() => setActiveProject(null)}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
             </button>
-
-            {/* large banner / thumbnail */}
-            <div className="proj-drawer-banner">
-              {activeProject.imageUrl ? (
-                <Image
-                  src={activeProject.imageUrl}
-                  alt={activeProject.company || activeProject.title}
-                  fill
-                  sizes="480px"
-                  style={{ objectFit: 'cover' }}
-                />
-              ) : (
-                <span className="proj-drawer-banner-text">
-                  {activeProject.company || activeProject.title}
-                </span>
-              )}
-            </div>
-
-            {/* drawer content */}
-            <div className="proj-drawer-content">
-              {/* company name + period + tags */}
-              <h3 className="proj-drawer-company">
-                {activeProject.company || activeProject.title}
-              </h3>
-              {activeProject.period && (
-                <p className="proj-drawer-period">{activeProject.period}</p>
-              )}
-              {activeProject.techStack?.length > 0 && (
-                <div className="proj-drawer-tags">
-                  {activeProject.techStack.map((t) => (
-                    <span key={t} className="proj-drawer-tag">{t}</span>
-                  ))}
-                </div>
-              )}
-
-              <div className="proj-drawer-divider" />
-
-              {/* project overview */}
-              {activeProject.description && (
-                <div className="proj-drawer-section">
-                  <p className="proj-drawer-label">Project overview</p>
-                  <div
-                    className="proj-drawer-overview ql-editor"
-                    dangerouslySetInnerHTML={{ __html: activeProject.description }}
-                  />
-                </div>
-              )}
-
-              <div className="proj-drawer-divider" />
-
-              {/* key achievements */}
-              {activeProject.achievements && activeProject.achievements.length > 0 && (
-                <div className="proj-drawer-section">
-                  <p className="proj-drawer-label">Key achievements</p>
-                  <ul className="proj-drawer-achievements">
-                    {activeProject.achievements.map((ach, idx) => (
-                      <li
-                        key={idx}
-                        dangerouslySetInnerHTML={{ __html: highlightMetric(ach) }}
-                      />
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* footer links */}
-              {(activeProject.testReportUrl || activeProject.githubUrl || activeProject.liveUrl) && (
-                <>
-                  <div className="proj-drawer-divider" />
-                  <div className="proj-drawer-footer">
-                    {activeProject.testReportUrl && (
-                      <a
-                        href={activeProject.testReportUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="proj-footer-link"
-                        id={`test-report-${activeProject._id}`}
-                      >
-                        Test report
-                      </a>
-                    )}
-                    {activeProject.githubUrl && (
-                      <a
-                        href={activeProject.githubUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="proj-footer-link"
-                        id={`github-${activeProject._id}`}
-                      >
-                        GitHub
-                      </a>
-                    )}
-                    {activeProject.liveUrl && (
-                      <a
-                        href={activeProject.liveUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="proj-footer-link"
-                        id={`live-${activeProject._id}`}
-                      >
-                        Live site ↗
-                      </a>
-                    )}
+            <div className="pj-drawer-body">
+              <div className="pj-drawer-hero">
+                {activeProject.imageUrl ? (
+                  <Image src={activeProject.imageUrl} alt={activeProject.title} fill className="pj-drawer-img" />
+                ) : (
+                  <div className="pj-drawer-placeholder"><span>{activeProject.company?.charAt(0) || activeProject.title.charAt(0)}</span></div>
+                )}
+              </div>
+              <div className="pj-drawer-main">
+                <div className="pj-drawer-header">
+                  <div>
+                    <span className="pj-drawer-tag">{activeProject.domain || 'QA Project'}</span>
+                    <h2 className="pj-drawer-title">{activeProject.title}</h2>
+                    {activeProject.company && <p className="pj-drawer-company">{activeProject.company}</p>}
                   </div>
-                </>
-              )}
+                  {activeProject.period && <span className="pj-drawer-period">{activeProject.period}</span>}
+                </div>
+                <div className="pj-drawer-section"><h4 className="pj-section-label">The Project</h4><div className="pj-drawer-desc ql-editor" dangerouslySetInnerHTML={{ __html: activeProject.description }} /></div>
+                {activeProject.achievements && activeProject.achievements.length > 0 && (
+                  <div className="pj-drawer-section"><h4 className="pj-section-label">Key Outcomes</h4><ul className="pj-achievements">{activeProject.achievements.map((ach, i) => <li key={i} dangerouslySetInnerHTML={{ __html: highlightMetric(ach) }} />)}</ul></div>
+                )}
+                <div className="pj-drawer-section"><h4 className="pj-section-label">Technology Used</h4><div className="pj-tech-list">{activeProject.techStack.map(t => <span key={t} className="pj-tech-tag">{t}</span>)}</div></div>
+                <div className="pj-drawer-footer">
+                  {activeProject.testReportUrl && <a href={activeProject.testReportUrl} target="_blank" rel="noopener noreferrer" className="pj-action-btn pj-action-btn--primary">Test Report ↗</a>}
+                  {activeProject.githubUrl && <a href={activeProject.githubUrl} target="_blank" rel="noopener noreferrer" className="pj-action-btn">GitHub</a>}
+                  {activeProject.liveUrl && <a href={activeProject.liveUrl} target="_blank" rel="noopener noreferrer" className="pj-action-btn">Live Site</a>}
+                </div>
+              </div>
             </div>
           </aside>
         </>
       )}
 
       <style>{`
-        /* ── Card grid ──────────────────────────────────────────── */
-        .proj-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 1.25rem;
-          margin-bottom: 1.5rem;
-        }
-        @media (max-width: 900px) { .proj-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 580px) { .proj-grid { grid-template-columns: 1fr; } }
+        .pj-wrapper { margin-top: 2rem; position: relative; }
+        .pj-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+        .pj-card { }
+        .pj-card-inner { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 20px; overflow: hidden; transition: all 0.4s; height: 100%; display: flex; flex-direction: column; }
+        .pj-card--featured .pj-card-inner { border-color: #3b82f6; background: rgba(59, 130, 246, 0.02); }
+        .pj-desktop-card { display: flex; }
+        .pj-compact-card { display: none; }
+        .pj-image-box { position: relative; height: 180px; background: #111; }
+        .pj-img { object-fit: cover; }
+        .pj-content { padding: 1.25rem; flex: 1; display: flex; flex-direction: column; }
+        .pj-domain { display: block; font-size: 0.65rem; font-weight: 700; color: var(--color-accent); text-transform: uppercase; margin-bottom: 0.4rem; }
+        .pj-title { font-size: 1.15rem; font-weight: 800; color: #fff; margin-bottom: 0.2rem; }
+        .pj-company { font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+        .pj-footer { margin-top: auto; display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05); }
+        .pj-tech-mini { display: flex; gap: 0.3rem; }
+        .pj-tech-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-accent); opacity: 0.5; }
+        .pj-link-btn { background: none; border: none; font-size: 0.75rem; font-weight: 700; color: var(--color-text-muted); cursor: pointer; transition: color 0.3s; }
+        .pj-link-btn:hover { color: var(--color-accent); }
 
-        /* ── Card ───────────────────────────────────────────────── */
-        .proj-card {
-          display: flex;
-          flex-direction: column;
-          cursor: pointer;
-          position: relative;
-          border-radius: var(--radius-lg);
-          overflow: hidden;
-          transition: all 0.3s ease;
-        }
-        .proj-card:hover {
-          border-color: rgba(0,212,255,0.25);
-          box-shadow: 0 16px 40px rgba(0,0,0,0.35);
-          transform: translateY(-4px);
-        }
-        .proj-card--featured {
-          border-color: rgba(0,212,255,0.25);
-          box-shadow: 0 0 30px rgba(0,212,255,0.06);
-        }
+        /* --- Compact Layout (Tablets & Mobile) --- */
+        .pj-compact-card { padding: 1.5rem; text-align: left; }
+        .pj-m-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .pj-m-header-left { display: flex; flex-direction: column; gap: 0.25rem; }
+        .pj-m-domain { font-size: 0.75rem; font-weight: 800; color: var(--color-accent); }
+        .pj-m-period { font-size: 0.75rem; color: var(--color-text-muted); }
+        .pj-m-featured { background: rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 0.25rem 0.75rem; border-radius: var(--radius-full); font-size: 0.65rem; font-weight: 700; }
+        .pj-m-title { font-size: 1.25rem; font-weight: 800; color: #fff; margin-bottom: 0.75rem; }
+        .pj-m-metric { font-size: 0.95rem; color: #10b981; font-weight: 600; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
+        .pj-m-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+        .pj-m-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem; }
+        .pj-m-tech { display: flex; gap: 0.5rem; }
+        .pj-m-tag { padding: 0.3rem 0.75rem; background: rgba(255,255,255,0.05); border-radius: var(--radius-full); font-size: 0.7rem; font-weight: 600; color: var(--color-text-secondary); }
+        .pj-m-details { background: none; border: none; font-size: 0.95rem; font-weight: 700; color: var(--color-accent); cursor: pointer; }
 
-        /* featured dot */
-        .proj-featured-dot {
-          position: absolute;
-          top: 0.75rem; right: 0.75rem;
-          width: 9px; height: 9px;
-          border-radius: 50%;
-          background: var(--color-accent);
-          box-shadow: 0 0 8px rgba(0,212,255,0.7);
-          z-index: 2;
-        }
+        .pj-carousel-ui { display: none; }
 
-        /* thumbnail — 180px tall */
-        .proj-thumbnail {
-          height: 180px;
-          background: rgba(255,255,255,0.04);
-          border-bottom: 1px solid var(--color-border);
-          position: relative;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          overflow: hidden;
-          flex-shrink: 0;
-        }
-        .proj-thumb-name {
-          font-size: 0.85rem;
-          font-weight: 700;
-          color: var(--color-text-secondary);
-          font-family: var(--font-heading);
-          padding: 0 1rem;
-          text-align: center;
-          line-height: 1.3;
+        @media (max-width: 1024px) {
+          .pj-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+          .pj-desktop-card { display: none; }
+          .pj-compact-card { display: block; }
         }
 
-        /* card body */
-        .proj-card-body {
-          padding: 1.1rem 1.2rem 1.3rem;
-          display: flex;
-          flex-direction: column;
-          gap: 0.4rem;
-          flex: 1;
+        @media (max-width: 768px) {
+          .pj-grid { display: flex; flex-wrap: nowrap; overflow-x: auto; scroll-snap-type: x mandatory; gap: 1rem; padding: 0 1.5rem 1rem; margin: 0 -1.5rem; scrollbar-width: none; }
+          .pj-grid::-webkit-scrollbar { display: none; }
+          .pj-card { flex: 0 0 85%; scroll-snap-align: center; }
+          .pj-carousel-ui { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; margin-top: 1.5rem; }
+          .pj-dots { display: flex; gap: 0.5rem; }
+          .pj-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.2); transition: all 0.3s; }
+          .pj-dot.active { width: 24px; border-radius: 4px; background: var(--color-accent); }
+          .pj-swipe-hint { font-size: 0.75rem; color: var(--color-text-muted); font-weight: 500; }
         }
 
-        /* hook line — 13px, primary, bold */
-        .proj-hook {
-          font-size: 0.82rem;
-          font-weight: 700;
-          color: var(--color-text-primary);
-          line-height: 1.35;
-        }
-        .proj-hook span { color: var(--color-text-secondary); }
-
-        /* period — 10px, muted */
-        .proj-period {
-          font-size: 0.72rem;
-          color: var(--color-text-muted);
+        /* --- Drawer Overlay & Sidebar --- */
+        .pj-overlay {
+          position: fixed; inset: 0;
+          background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px);
+          z-index: 1000; animation: fadeIn 0.3s ease;
         }
 
-        /* top metric — 11px, success color */
-        .proj-top-metric {
-          font-size: 0.75rem;
-          color: var(--color-success);
-          font-weight: 600;
-          line-height: 1.4;
-          margin-top: 0.1rem;
-        }
-        .proj-top-metric .metric-num {
-          font-weight: 800;
+        .pj-drawer {
+          position: fixed; top: 0; right: 0; bottom: 0;
+          width: min(560px, 100vw); background: #0a0f1a;
+          z-index: 1001; box-shadow: -10px 0 50px rgba(0, 0, 0, 0.5);
+          overflow-y: auto; animation: slideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        /* tags */
-        .proj-tags {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 0.35rem;
-          margin-top: 0.3rem;
-        }
-        .proj-tag {
-          display: inline-block;
-          padding: 0.2rem 0.6rem;
-          border-radius: var(--radius-full);
-          font-size: 0.7rem;
-          font-weight: 500;
-          background: rgba(0,212,255,0.07);
-          color: var(--color-text-secondary);
-          border: 1px solid rgba(0,212,255,0.15);
-        }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* view details text link */
-        .proj-view-link {
-          display: inline-block;
-          margin-top: auto;
-          padding-top: 0.75rem;
-          font-size: 0.8rem;
-          font-weight: 600;
-          color: var(--color-text-secondary);
-          background: none;
-          border: none;
-          cursor: pointer;
-          padding-left: 0;
-          text-align: left;
-          transition: color 0.2s;
-        }
-        .proj-card:hover .proj-view-link { color: var(--color-accent); }
-
-        /* ── More bar ───────────────────────────────────────────── */
-        .proj-more-bar {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 1rem;
-          flex-wrap: wrap;
-          padding: 0.85rem 1.25rem;
-          background: rgba(255,255,255,0.03);
-          border: 1px solid var(--color-border);
-          border-radius: var(--radius-md);
-          margin-top: 0.5rem;
-        }
-        .proj-more-info { display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap; min-width: 0; }
-        .proj-more-count {
-          font-size: 0.85rem;
-          font-weight: 700;
-          color: var(--color-text-primary);
-          white-space: nowrap;
-        }
-        .proj-more-names {
-          font-size: 0.78rem;
-          color: var(--color-text-muted);
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          max-width: 500px;
-        }
-
-        /* ── Overlay ────────────────────────────────────────────── */
-        .proj-overlay {
-          position: fixed;
-          inset: 0;
-          background: rgba(0,0,0,0.65);
-          backdrop-filter: blur(4px);
-          z-index: 400;
-          animation: fadeOverlay 0.25s ease;
-        }
-
-        /* ── Side Drawer ────────────────────────────────────────── */
-        .proj-drawer {
-          position: fixed;
-          top: 0; right: 0;
-          width: min(480px, 100vw);
-          height: 100dvh;
-          background: #0d1526;
-          border-left: 1px solid var(--color-border);
-          z-index: 450;
-          overflow-y: auto;
-          display: flex;
-          flex-direction: column;
-          animation: slideInDrawer 0.3s cubic-bezier(0.16,1,0.3,1);
-        }
-        @keyframes slideInDrawer {
-          from { transform: translateX(100%); opacity: 0.5; }
-          to   { transform: translateX(0); opacity: 1; }
-        }
-
-        .proj-drawer-close {
-          position: absolute;
-          top: 1rem; right: 1rem;
-          width: 34px; height: 34px;
-          border-radius: 50%;
-          border: 1px solid var(--color-border);
-          background: rgba(255,255,255,0.05);
-          color: var(--color-text-secondary);
-          font-size: 0.95rem;
+        .pj-close {
+          position: absolute; top: 1.5rem; left: 1.5rem;
+          width: 2.5rem; height: 2.5rem; background: #fff; color: #000;
+          border: none; border-radius: 50%; cursor: pointer;
           display: flex; align-items: center; justify-content: center;
-          cursor: pointer;
-          z-index: 1;
-          transition: all 0.2s;
-        }
-        .proj-drawer-close:hover {
-          background: rgba(255,107,107,0.12);
-          border-color: var(--color-error);
-          color: var(--color-error);
+          z-index: 1002; transition: all 0.3s;
         }
 
-        /* drawer banner — 220px */
-        .proj-drawer-banner {
-          height: 220px;
-          background: rgba(255,255,255,0.04);
-          border-bottom: 1px solid var(--color-border);
-          position: relative;
-          display: flex; align-items: center; justify-content: center;
-          flex-shrink: 0;
-          overflow: hidden;
-        }
-        .proj-drawer-banner-text {
-          font-size: 1.3rem;
-          font-weight: 800;
-          color: var(--color-text-secondary);
-          font-family: var(--font-heading);
-          text-align: center;
-          padding: 0 2rem;
-          line-height: 1.3;
-        }
+        .pj-drawer-hero { position: relative; height: 300px; }
+        .pj-drawer-img { object-fit: cover; }
+        .pj-drawer-main { padding: 2.5rem; }
+        .pj-drawer-tag { font-size: 0.75rem; font-weight: 800; color: var(--color-accent); text-transform: uppercase; margin-bottom: 0.75rem; display: block; }
+        .pj-drawer-title { font-size: 2.25rem; font-weight: 900; color: #fff; line-height: 1.1; margin-bottom: 0.5rem; }
+        .pj-drawer-company { font-size: 1.1rem; color: var(--color-text-secondary); margin-bottom: 2rem; }
 
-        /* drawer content */
-        .proj-drawer-content { padding: 1.75rem; flex: 1; }
+        .pj-drawer-section { margin-bottom: 3rem; }
+        .pj-section-label { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: var(--color-text-muted); margin-bottom: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem; }
+        .pj-drawer-desc { font-size: 1rem; line-height: 1.8; color: var(--color-text-secondary); }
 
-        .proj-drawer-company {
-          font-size: 1.15rem;
-          font-weight: 800;
-          color: var(--color-text-primary);
-          margin-bottom: 0.3rem;
-          line-height: 1.25;
-        }
-        .proj-drawer-period {
-          font-size: 0.75rem;
-          color: var(--color-text-muted);
-          margin-bottom: 0.85rem;
-        }
-        .proj-drawer-tags {
-          display: flex; flex-wrap: wrap; gap: 0.4rem;
-          margin-bottom: 0.5rem;
-        }
-        .proj-drawer-tag {
-          display: inline-block;
-          padding: 0.25rem 0.7rem;
-          border-radius: var(--radius-full);
-          font-size: 0.72rem;
-          font-weight: 600;
-          background: rgba(0,212,255,0.1);
-          color: var(--color-accent);
-          border: 1px solid rgba(0,212,255,0.25);
-        }
+        .pj-achievements { list-style: none; padding: 0; display: grid; gap: 1rem; }
+        .pj-achievements li { background: rgba(255, 255, 255, 0.02); padding: 1.25rem 1.25rem 1.25rem 3rem; border-radius: 16px; font-size: 0.95rem; color: var(--color-text-secondary); position: relative; }
+        .pj-achievements li::before { content: '✓'; position: absolute; left: 1.25rem; color: var(--color-success); font-weight: 900; }
 
-        .proj-drawer-divider {
-          height: 1px;
-          background: var(--color-border);
-          margin: 1.25rem 0;
-        }
+        .pj-tech-list { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .pj-tech-tag { padding: 0.4rem 1rem; background: rgba(255, 255, 255, 0.04); border-radius: var(--radius-full); font-size: 0.8rem; color: var(--color-text-secondary); }
 
-        /* sections inside drawer */
-        .proj-drawer-section { margin-bottom: 0; }
-        .proj-drawer-label {
-          font-size: 0.65rem;
-          font-weight: 700;
-          letter-spacing: 0.1em;
-          text-transform: uppercase;
-          color: var(--color-text-muted);
-          margin-bottom: 0.65rem;
-        }
+        .pj-drawer-footer { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 4rem; }
+        .pj-action-btn { flex: 1; min-width: 140px; padding: 1rem; border-radius: 14px; font-weight: 700; text-align: center; text-decoration: none; transition: all 0.3s; background: rgba(255, 255, 255, 0.05); color: #fff; }
+        .pj-action-btn--primary { background: var(--color-accent); color: var(--color-bg); }
 
-        /* overview */
-        .proj-drawer-overview {
-          font-size: 0.875rem;
-          color: var(--color-text-primary);
-          line-height: 1.7;
-          padding: 0; border: none; background: none;
-          overflow-wrap: break-word;
-        }
-        .proj-drawer-overview ul, .proj-drawer-overview ol { padding-left: 1.25rem; }
-        .proj-drawer-overview li { margin-bottom: 0.2rem; }
-        .proj-drawer-overview p { margin-bottom: 0.3rem; }
-        .proj-drawer-overview strong { color: var(--color-text-primary); }
-
-        /* achievements */
-        .proj-drawer-achievements {
-          list-style: none;
-          padding: 0;
-          display: flex;
-          flex-direction: column;
-          gap: 0.55rem;
-        }
-        .proj-drawer-achievements li {
-          font-size: 0.875rem;
-          color: var(--color-text-secondary);
-          line-height: 1.6;
-          padding-left: 1.1rem;
-          position: relative;
-        }
-        .proj-drawer-achievements li::before {
-          content: '•';
-          position: absolute;
-          left: 0;
-          color: var(--color-success);
-          font-weight: 700;
-        }
-        .proj-drawer-achievements li .metric-num {
-          color: var(--color-success);
-          font-weight: 700;
-        }
-
-        /* footer links */
-        .proj-drawer-footer {
-          display: flex;
-          gap: 0.75rem;
-          flex-wrap: wrap;
-        }
-        .proj-footer-link {
-          display: inline-flex;
-          align-items: center;
-          padding: 0.5rem 1.1rem;
-          border-radius: var(--radius-md);
-          font-size: 0.82rem;
-          font-weight: 600;
-          color: var(--color-text-primary);
-          background: rgba(255,255,255,0.05);
-          border: 1px solid var(--color-border);
-          text-decoration: none;
-          transition: all 0.2s;
-        }
-        .proj-footer-link:hover {
-          background: rgba(0,212,255,0.08);
-          border-color: var(--color-accent);
-          color: var(--color-accent);
-        }
-
-        @media (max-width: 540px) {
-          .proj-drawer { width: 100vw; }
-          .proj-drawer-content { padding: 1.25rem; }
-          .proj-more-names { display: none; }
+        @media (max-width: 768px) {
+          .pj-drawer-hero { height: 200px; }
+          .pj-drawer-main { padding: 1.5rem; }
+          .pj-drawer-title { font-size: 1.75rem; }
         }
       `}</style>
     </section>
