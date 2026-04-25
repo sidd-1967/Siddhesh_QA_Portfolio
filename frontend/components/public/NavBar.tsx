@@ -292,6 +292,15 @@ export default function NavBar({ profile, config }: { profile: any, config?: any
         }
         .mobile-backdrop.open { opacity: 1; visibility: visible; }
 
+        @media (max-width: 1100px) {
+          .hide-mobile { display: none !important; }
+          .hamburger.hide-desktop { display: flex !important; }
+        }
+
+        @media (min-width: 1101px) {
+          .hamburger.hide-desktop { display: none !important; }
+        }
+
         @media (max-width: 480px) {
           .mobile-sidebar { width: 100%; border-left: none; }
         }
