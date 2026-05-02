@@ -200,10 +200,7 @@ export default function SkillsSection({ grouped, config, categories: orderedCate
           animation-name: sk-scroll-reverse;
         }
 
-        /* Pause on hover */
-        .sk-marquee-wrapper:hover .sk-marquee-track {
-          animation-play-state: paused;
-        }
+        /* No pause on hover as per request */
 
         @keyframes sk-scroll {
           0%   { transform: translateX(0); }

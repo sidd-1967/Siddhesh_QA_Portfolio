@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import ImageUpload from './ImageUpload';
 
 interface Certification {
   _id: string;
@@ -40,7 +41,6 @@ export default function CertificationForm({ initialData, onSubmit, onCancel, loa
       errs.expiryDate = 'Expiry must be after issue date';
     }
     if (form.credentialUrl && !/^https?:\/\//.test(form.credentialUrl)) errs.credentialUrl = 'Must be a valid URL';
-    if (form.badgeUrl && !/^https?:\/\//.test(form.badgeUrl)) errs.badgeUrl = 'Must be a valid URL';
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -96,10 +96,12 @@ export default function CertificationForm({ initialData, onSubmit, onCancel, loa
           {errors.credentialUrl && <span className="form-error">{errors.credentialUrl}</span>}
         </div>
         <div className="form-group">
-          <label className="form-label">Badge URL</label>
-          <input className={`form-input${errors.badgeUrl ? ' input-error' : ''}`} value={form.badgeUrl}
-            onChange={(e) => setForm({ ...form, badgeUrl: e.target.value })} placeholder="https://..." />
-          {errors.badgeUrl && <span className="form-error">{errors.badgeUrl}</span>}
+          <label className="form-label">Certificate Image (Optional)</label>
+          <ImageUpload
+            label="Upload Certificate Image"
+            onUpload={(url) => setForm({ ...form, badgeUrl: url })}
+            defaultImage={form.badgeUrl}
+          />
         </div>
       </div>
 

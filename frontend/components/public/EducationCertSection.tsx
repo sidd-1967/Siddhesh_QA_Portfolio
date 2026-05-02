@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef } from 'react';
 import Image from 'next/image';
+import FallbackImage from '../ui/FallbackImage';
 
 interface Education {
   _id: string;
@@ -155,73 +156,66 @@ export default function EducationCertSection({ education, certifications, config
               <h2 className="section-title fade-in delay-1">{config?.certifications?.subtitle || 'Certifications'}</h2>
             </div>
 
-            <div className="cert-grid fade-in delay-2">
+            <div className="cert-gallery fade-in delay-2">
               {certifications.length === 0 ? (
-                <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', gridColumn: '1/-1' }}>
+                <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', width: '100%', gridColumn: '1/-1' }}>
                   No certifications added.
                 </p>
               ) : (
                 certifications.map((cert) => (
-                  <div key={cert._id} className="cert-card card">
-                    {/* thumbnail row */}
-                    <div className="cert-thumb-row">
-                      <div
-                        className="cert-badge"
-                        style={{
-                          background: `${getIssuerColor(cert.issuer)}18`,
-                          border: `1px solid ${getIssuerColor(cert.issuer)}33`,
-                        }}
-                      >
-                        {cert.badgeUrl ? (
-                          <Image
+                  <div key={cert._id} className="cert-card" style={{ '--issuer-color': getIssuerColor(cert.issuer) } as React.CSSProperties}>
+                    
+                    {/* Hero Image Section */}
+                    <a 
+                      href={cert.credentialUrl || cert.badgeUrl || '#'} 
+                      target={cert.credentialUrl || cert.badgeUrl ? "_blank" : "_self"} 
+                      rel="noopener noreferrer" 
+                      className="cert-card-hero"
+                    >
+                      {cert.badgeUrl ? (
+                        <>
+                          <div className="cert-hero-bg">
+                            <Image src={cert.badgeUrl} alt="Background" fill style={{ objectFit: 'cover' }} />
+                          </div>
+                          <FallbackImage
                             src={cert.badgeUrl}
                             alt={cert.name}
-                            width={52}
-                            height={52}
-                            style={{ objectFit: 'contain' }}
+                            fill
+                            style={{ objectFit: 'contain', padding: '1.25rem', zIndex: 1 }}
+                            fallbackText="SDG"
                           />
-                        ) : (
-                          <svg
-                            width="24"
-                            height="24"
-                            fill="none"
-                            stroke={getIssuerColor(cert.issuer)}
-                            strokeWidth="1.5"
-                            viewBox="0 0 24 24"
-                          >
-                            <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                          </svg>
+                        </>
+                      ) : (
+                        <span className="cert-hero-fallback">SDG</span>
+                      )}
+                      
+                      <div className="cert-hero-overlay">
+                        <svg width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                        </svg>
+                        <span>View Certificate</span>
+                      </div>
+                    </a>
+
+                    {/* Content Section */}
+                    <div className="cert-card-content">
+                      <div className="cert-card-header">
+                        <span className="cert-card-issuer">{cert.issuer}</span>
+                      </div>
+                      
+                      <h3 className="cert-card-title">{cert.name}</h3>
+                      
+                      <div className="cert-card-meta">
+                        <span className="cert-card-date">
+                          {new Date(cert.issueDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                          {cert.expiryDate && ` – ${new Date(cert.expiryDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`}
+                        </span>
+                        {cert.credentialId && (
+                          <span className="cert-card-id">ID: {cert.credentialId}</span>
                         )}
                       </div>
-                      <span className="cert-issuer" style={{ color: getIssuerColor(cert.issuer) }}>
-                        {cert.issuer}
-                      </span>
                     </div>
 
-                    {/* period */}
-                    <p className="cert-period">
-                      {new Date(cert.issueDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-                      {cert.expiryDate &&
-                        ` – ${new Date(cert.expiryDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`}
-                    </p>
-
-                    {/* cert name — hook */}
-                    <h3 className="cert-name">{cert.name}</h3>
-
-                    {cert.credentialId && (
-                      <p className="cert-id">ID: {cert.credentialId}</p>
-                    )}
-
-                    {cert.credentialUrl && (
-                      <a
-                        href={cert.credentialUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="cert-link"
-                      >
-                        Verify Credential ↗
-                      </a>
-                    )}
                   </div>
                 ))
               )}
@@ -405,70 +399,158 @@ export default function EducationCertSection({ education, certifications, config
         }
         .edu-expand-btn:hover { opacity: 0.75; }
 
-        /* ── Certifications ─────────────────────────────────────────── */
-        .cert-grid {
+        /* ── Certifications (Gallery Showcase) ─────────────────────────── */
+        .cert-gallery {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-          gap: 1.25rem;
+          grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+          gap: 2rem;
         }
+
         .cert-card {
+          background: rgba(255, 255, 255, 0.015);
+          border: 1px solid rgba(255, 255, 255, 0.04);
+          border-radius: 16px;
+          overflow: hidden;
+          transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+        }
+
+        .cert-card:hover {
+          transform: translateY(-6px);
+          box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+          border-color: color-mix(in srgb, var(--issuer-color) 30%, transparent);
+        }
+
+        /* Hero Image */
+        .cert-card-hero {
+          position: relative;
+          height: 240px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(0,0,0,0.4);
+          border-bottom: 1px solid rgba(255,255,255,0.04);
+          text-decoration: none;
+          overflow: hidden;
+          flex-shrink: 0;
+        }
+
+        .cert-hero-bg {
+          position: absolute;
+          inset: -30px;
+          filter: blur(25px) brightness(0.4);
+          z-index: 0;
+        }
+
+        .cert-hero-fallback {
+          font-family: var(--font-heading);
+          font-weight: 800;
+          font-size: 2.5rem;
+          color: rgba(255,255,255,0.1);
+          letter-spacing: 0.15em;
+          z-index: 1;
+        }
+
+        .cert-hero-overlay {
+          position: absolute;
+          inset: 0;
+          background: rgba(10, 15, 30, 0.6);
+          backdrop-filter: blur(4px);
+          -webkit-backdrop-filter: blur(4px);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 0.75rem;
+          color: #fff;
+          font-weight: 700;
+          font-size: 1rem;
+          opacity: 0;
+          z-index: 2;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .cert-card-hero:hover .cert-hero-overlay {
+          opacity: 1;
+        }
+
+        /* Content */
+        .cert-card-content {
           padding: 1.5rem;
           display: flex;
           flex-direction: column;
-          gap: 0.5rem;
+          gap: 0.85rem;
+          flex: 1;
         }
-        .cert-thumb-row {
+
+        .cert-card-header {
           display: flex;
           align-items: center;
-          gap: 0.75rem;
-          margin-bottom: 0.25rem;
+          justify-content: space-between;
         }
-        .cert-badge {
-          width: 64px; height: 64px;
-          border-radius: var(--radius-md);
-          display: flex; align-items: center; justify-content: center;
-          flex-shrink: 0;
-        }
-        .cert-issuer {
-          font-size: 0.72rem;
-          font-weight: 700;
-          letter-spacing: 0.06em;
+
+        .cert-card-issuer {
+          font-size: 0.7rem;
+          font-weight: 800;
           text-transform: uppercase;
+          letter-spacing: 0.1em;
+          color: var(--issuer-color);
+          background: color-mix(in srgb, var(--issuer-color) 12%, transparent);
+          padding: 0.25rem 0.65rem;
+          border-radius: 4px;
         }
-        .cert-period {
-          font-size: 0.75rem;
-          color: var(--color-text-muted);
-        }
-        .cert-name {
-          font-size: 0.9rem;
-          font-weight: 700;
-          color: var(--color-text-primary);
+
+        .cert-card-title {
+          font-size: 1.15rem;
+          font-weight: 800;
+          color: #fff;
           line-height: 1.4;
+          margin: 0;
         }
-        .cert-id {
-          font-size: 0.72rem;
-          color: var(--color-text-muted);
-          font-family: monospace;
-        }
-        .cert-link {
-          font-size: 0.8rem;
-          font-weight: 600;
-          color: var(--color-accent);
-          text-decoration: none;
+
+        .cert-card-meta {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
           margin-top: auto;
-          padding-top: 0.65rem;
-          border-top: 1px solid var(--color-border);
+          padding-top: 0.75rem;
         }
-        .cert-link:hover { text-decoration: underline; }
+
+        .cert-card-date {
+          font-size: 0.85rem;
+          color: var(--color-text-secondary);
+        }
+
+        .cert-card-id {
+          font-family: monospace;
+          font-size: 0.8rem;
+          color: var(--color-text-muted);
+          background: rgba(255,255,255,0.03);
+          padding: 0.25rem 0.6rem;
+          border-radius: 6px;
+          width: fit-content;
+          border: 1px solid rgba(255,255,255,0.05);
+        }
 
         /* mobile */
         @media (max-width: 640px) {
+          /* Education */
           .edu-timeline-item {
             grid-template-columns: 1fr;
             gap: 0;
           }
           .edu-connector { display: none; }
           .edu-card { margin-bottom: 1rem; padding: 1.25rem; }
+
+          /* Certifications */
+          .cert-gallery {
+            grid-template-columns: 1fr;
+          }
+          .cert-card-hero {
+            height: 200px;
+          }
         }
       `}</style>
     </div>

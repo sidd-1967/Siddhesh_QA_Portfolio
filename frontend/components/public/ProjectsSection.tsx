@@ -195,37 +195,107 @@ export default function ProjectsSection({ projects, config }: { projects: Projec
       <style>{`
         .pj-wrapper { margin-top: 2rem; position: relative; }
         .pj-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
-        .pj-card { }
-        .pj-card-inner { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 20px; overflow: hidden; transition: all 0.4s; height: 100%; display: flex; flex-direction: column; }
-        .pj-card--featured .pj-card-inner { border-color: #3b82f6; background: rgba(59, 130, 246, 0.02); }
+        .pj-card { position: relative; perspective: 1000px; }
+        .pj-card-inner { 
+          background: rgba(20, 25, 40, 0.4); 
+          border: 1px solid rgba(255, 255, 255, 0.05); 
+          border-radius: 24px; 
+          overflow: hidden; 
+          transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); 
+          height: 100%; 
+          display: flex; 
+          flex-direction: column;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          position: relative;
+          z-index: 1;
+        }
+        
+        .pj-card:hover .pj-card-inner {
+          transform: translateY(-8px) scale(1.02);
+          border-color: rgba(0, 212, 255, 0.3);
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 212, 255, 0.1);
+        }
+
+        /* Ambient Glow Behind Card */
+        .pj-card::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(135deg, var(--color-accent), #7B5FFD);
+          border-radius: 24px;
+          filter: blur(20px);
+          opacity: 0;
+          transition: opacity 0.5s;
+          z-index: 0;
+        }
+        .pj-card:hover::before { opacity: 0.15; }
+
+        .pj-card--featured .pj-card-inner { 
+          border-color: rgba(0, 212, 255, 0.25); 
+          background: linear-gradient(145deg, rgba(20, 25, 40, 0.6), rgba(0, 212, 255, 0.03));
+        }
+
         .pj-desktop-card { display: flex; }
         .pj-compact-card { display: none; }
-        .pj-image-box { position: relative; height: 180px; background: #111; }
-        .pj-img { object-fit: cover; }
-        .pj-content { padding: 1.25rem; flex: 1; display: flex; flex-direction: column; }
-        .pj-domain { display: block; font-size: 0.65rem; font-weight: 700; color: var(--color-accent); text-transform: uppercase; margin-bottom: 0.4rem; }
-        .pj-title { font-size: 1.15rem; font-weight: 800; color: #fff; margin-bottom: 0.2rem; }
-        .pj-company { font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 1rem; }
-        .pj-footer { margin-top: auto; display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05); }
-        .pj-tech-mini { display: flex; gap: 0.3rem; }
-        .pj-tech-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-accent); opacity: 0.5; }
-        .pj-link-btn { background: none; border: none; font-size: 0.75rem; font-weight: 700; color: var(--color-text-muted); cursor: pointer; transition: color 0.3s; }
-        .pj-link-btn:hover { color: var(--color-accent); }
+        
+        .pj-image-box { position: relative; height: 190px; background: #0f121b; overflow: hidden; }
+        .pj-image-box::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(to bottom, transparent, rgba(20,25,40, 0.95));
+          z-index: 1;
+        }
+        .pj-img { object-fit: cover; transition: transform 0.7s; }
+        .pj-card:hover .pj-img { transform: scale(1.08); }
+        
+        .pj-featured-badge {
+           position: absolute; top: 1rem; right: 1rem; z-index: 2;
+           background: linear-gradient(90deg, #00D4FF, #7B5FFD);
+           color: #fff; padding: 0.35rem 0.85rem; border-radius: 12px;
+           font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
+           box-shadow: 0 4px 15px rgba(0,212,255,0.4);
+        }
+
+        .pj-content { padding: 1.5rem; flex: 1; display: flex; flex-direction: column; position: relative; z-index: 2; }
+        .pj-domain { display: inline-block; font-size: 0.65rem; font-weight: 800; color: var(--color-accent); text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 0.08em; background: rgba(0,212,255,0.1); padding: 0.2rem 0.6rem; border-radius: 8px;}
+        .pj-title { font-size: 1.25rem; font-weight: 800; color: #fff; margin-bottom: 0.3rem; letter-spacing: -0.02em; }
+        .pj-company { font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 1.2rem; }
+        
+        .pj-footer { margin-top: auto; display: flex; justify-content: space-between; align-items: center; padding-top: 1.25rem; border-top: 1px solid rgba(255,255,255,0.06); }
+        .pj-tech-mini { display: flex; gap: 0.4rem; }
+        .pj-tech-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-accent); opacity: 0.7; box-shadow: 0 0 8px var(--color-accent); }
+        .pj-tech-dot:nth-child(2) { background: #7B5FFD; box-shadow: 0 0 8px #7B5FFD;}
+        .pj-tech-dot:nth-child(3) { background: #22D3A5; box-shadow: 0 0 8px #22D3A5;}
+        
+        .pj-link-btn { 
+          background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); 
+          padding: 0.4rem 1rem; border-radius: 12px;
+          font-size: 0.75rem; font-weight: 700; color: #fff; 
+          cursor: pointer; transition: all 0.3s; 
+          display: flex; align-items: center; gap: 0.3rem;
+        }
+        .pj-card:hover .pj-link-btn { background: var(--color-accent); color: #000; border-color: var(--color-accent); box-shadow: 0 0 15px rgba(0,212,255,0.4); }
 
         /* --- Compact Layout (Tablets & Mobile) --- */
-        .pj-compact-card { padding: 1.5rem; text-align: left; }
-        .pj-m-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .pj-m-header-left { display: flex; flex-direction: column; gap: 0.25rem; }
-        .pj-m-domain { font-size: 0.75rem; font-weight: 800; color: var(--color-accent); }
-        .pj-m-period { font-size: 0.75rem; color: var(--color-text-muted); }
-        .pj-m-featured { background: rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 0.25rem 0.75rem; border-radius: var(--radius-full); font-size: 0.65rem; font-weight: 700; }
-        .pj-m-title { font-size: 1.25rem; font-weight: 800; color: #fff; margin-bottom: 0.75rem; }
-        .pj-m-metric { font-size: 0.95rem; color: #10b981; font-weight: 600; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
-        .pj-m-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-        .pj-m-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem; }
+        .pj-compact-card { padding: 1.75rem; text-align: left; background: radial-gradient(circle at top right, rgba(0,212,255,0.05), transparent 60%); }
+        .pj-m-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.2rem; }
+        .pj-m-header-left { display: flex; flex-direction: column; gap: 0.3rem; }
+        .pj-m-domain { display: inline-block; font-size: 0.7rem; font-weight: 800; color: var(--color-accent); letter-spacing: 0.05em; background: rgba(0,212,255,0.1); padding: 0.2rem 0.6rem; border-radius: 6px; width: fit-content; }
+        .pj-m-period { font-size: 0.75rem; color: var(--color-text-muted); padding-left: 0.2rem; }
+        .pj-m-featured { background: linear-gradient(90deg, #00D4FF, #7B5FFD); color: #fff; padding: 0.3rem 0.8rem; border-radius: 12px; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; box-shadow: 0 4px 10px rgba(0,212,255,0.3); }
+        
+        .pj-m-title { font-size: 1.35rem; font-weight: 800; color: #fff; margin-bottom: 0.5rem; letter-spacing: -0.01em; }
+        .pj-m-metric { font-size: 0.95rem; color: #22D3A5; font-weight: 600; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; background: rgba(34,211,165,0.08); padding: 0.4rem 0.8rem; border-radius: 8px; border: 1px solid rgba(34,211,165,0.2); }
+        .pj-m-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; box-shadow: 0 0 8px currentColor; }
+        
+        .pj-m-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 1.25rem; }
         .pj-m-tech { display: flex; gap: 0.5rem; }
-        .pj-m-tag { padding: 0.3rem 0.75rem; background: rgba(255,255,255,0.05); border-radius: var(--radius-full); font-size: 0.7rem; font-weight: 600; color: var(--color-text-secondary); }
-        .pj-m-details { background: none; border: none; font-size: 0.95rem; font-weight: 700; color: var(--color-accent); cursor: pointer; }
+        .pj-m-tag { padding: 0.35rem 0.8rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; font-size: 0.75rem; font-weight: 600; color: var(--color-text-secondary); }
+        .pj-m-details { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); font-size: 0.8rem; font-weight: 700; color: #fff; cursor: pointer; padding: 0.5rem 1rem; border-radius: 10px; transition: all 0.3s; }
+        .pj-card:hover .pj-m-details { background: var(--color-accent); color: #000; border-color: var(--color-accent); box-shadow: 0 0 15px rgba(0,212,255,0.4); }
 
         .pj-carousel-ui { display: none; }
 

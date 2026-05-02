@@ -17,8 +17,8 @@ const certValidation = [
       }
       return true;
     }),
-  body('credentialUrl').optional({ checkFalsy: true }).isURL().withMessage('Must be a valid URL'),
-  body('badgeUrl').optional({ checkFalsy: true }).isURL().withMessage('Must be a valid URL'),
+  body('credentialUrl').optional({ checkFalsy: true }).isURL({ require_tld: false }).withMessage('Must be a valid URL'),
+  body('badgeUrl').optional({ checkFalsy: true }).isURL({ require_tld: false }).withMessage('Must be a valid URL'),
 ];
 
 router.get('/', asyncHandler(async (req, res) => {

@@ -140,7 +140,7 @@ export default function ExperienceSection({ experience, config }: { experience: 
                   {exp.description && (
                     <div
                       className="xp-desc ql-editor"
-                      dangerouslySetInnerHTML={{ __html: exp.description }}
+                      dangerouslySetInnerHTML={{ __html: exp.description.replace(/&nbsp;|\u00A0/g, ' ') }}
                     />
                   )}
 
@@ -199,7 +199,7 @@ export default function ExperienceSection({ experience, config }: { experience: 
                           )}
                           {exp.location && (
                             <span className="xp-mob-loc">
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
                               {exp.location}
                             </span>
                           )}
@@ -210,7 +210,7 @@ export default function ExperienceSection({ experience, config }: { experience: 
                     {/* Date + Duration strip */}
                     <div className="xp-mob-date-strip">
                       <div className="xp-mob-date-range">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
                         {formatDate(exp.startDate)} – {exp.current ? 'Present' : formatDate(exp.endDate, true)}
                       </div>
                       <span className="xp-mob-dur">{getDuration(exp.startDate, exp.endDate, exp.current)}</span>
@@ -218,7 +218,7 @@ export default function ExperienceSection({ experience, config }: { experience: 
 
                     {/* Description */}
                     {exp.description && (
-                      <div className="xp-desc ql-editor" dangerouslySetInnerHTML={{ __html: exp.description }} />
+                      <div className="xp-desc ql-editor" dangerouslySetInnerHTML={{ __html: exp.description.replace(/&nbsp;|\u00A0/g, ' ') }} />
                     )}
 
                     {/* Tech Stack */}
@@ -464,7 +464,7 @@ export default function ExperienceSection({ experience, config }: { experience: 
         }
 
         /* Description */
-        .xp-desc {
+        .xp-desc, .xp-desc * {
           font-size: 0.92rem;
           color: var(--color-text-secondary);
           line-height: 1.8;
@@ -474,6 +474,8 @@ export default function ExperienceSection({ experience, config }: { experience: 
           background: none;
           white-space: normal;
           overflow-wrap: break-word;
+          word-wrap: break-word;
+          word-break: normal;
           min-width: 0;
         }
         .xp-desc ul, .xp-desc ol {
