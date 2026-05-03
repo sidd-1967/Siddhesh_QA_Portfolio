@@ -99,8 +99,8 @@ export default function CertificationForm({ initialData, onSubmit, onCancel, loa
           <label className="form-label">Certificate Image (Optional)</label>
           <ImageUpload
             label="Upload Certificate Image"
-            onUpload={(url) => setForm({ ...form, badgeUrl: url })}
-            defaultImage={form.badgeUrl}
+            onChange={(url) => setForm({ ...form, badgeUrl: url })}
+            value={form.badgeUrl}
           />
         </div>
       </div>
