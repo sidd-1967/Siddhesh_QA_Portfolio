@@ -3,11 +3,12 @@ import type { Metadata } from 'next';
 // Fonts are loaded via standard link tags below instead.
 import './globals.css';
 import { AppConfig } from '@/config/app.config';
+import StarsBackground from '@/components/public/StarsBackground';
 
 export async function generateMetadata(): Promise<Metadata> {
   let name: string = AppConfig.app.name;
   try {
-    const res = await fetch(`${AppConfig.apiBaseUrl}/api/profile`, { next: { revalidate: 3600 } });
+    const res = await fetch(`${AppConfig.apiBaseUrl}/api/public/profile`, { next: { revalidate: 3600 } });
     if (res.ok) {
       const data = await res.json();
       if (data.success && data.data?.fullName) {
@@ -61,7 +62,11 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <StarsBackground />
+        {children}
+      </body>
     </html>
   );
 }
+

@@ -94,7 +94,17 @@ export default function ProjectsSection({ projects, config }: { projects: Projec
   }, [sortedProjects]);
 
   useEffect(() => {
-    document.body.style.overflow = activeProject ? 'hidden' : '';
+    if (activeProject) {
+      document.body.style.overflow = 'hidden';
+      document.body.classList.add('pj-drawer-open');
+    } else {
+      document.body.style.overflow = '';
+      document.body.classList.remove('pj-drawer-open');
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.body.classList.remove('pj-drawer-open');
+    };
   }, [activeProject]);
 
   const handleScroll = () => {
@@ -105,7 +115,7 @@ export default function ProjectsSection({ projects, config }: { projects: Projec
   };
 
   return (
-    <section id="projects" className="section" ref={ref}>
+    <section id="projects" className={`section ${activeProject ? 'pj-section--drawer-open' : ''}`} ref={ref}>
       <div className="container">
         <div className="section-header">
           <span className="section-tag fade-in">{config?.title || 'Portfolio'}</span>
@@ -759,6 +769,10 @@ export default function ProjectsSection({ projects, config }: { projects: Projec
         .pj-action-btn--primary:hover { box-shadow: 0 0 20px rgba(0,212,255,0.4); }
 
         .metric-num { color: #22D3A5; font-weight: 900; }
+
+        .pj-section--drawer-open {
+          z-index: 1050 !important;
+        }
 
         @media (max-width: 768px) {
           .pj-drawer-hero { height: 200px; }
