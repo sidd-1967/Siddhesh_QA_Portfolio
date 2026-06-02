@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 // Font optimization removed to prevent Google Fonts API fetch timeout errors during build.
 // Fonts are loaded via standard link tags below instead.
 import './globals.css';
@@ -46,6 +46,14 @@ export async function generateMetadata(): Promise<Metadata> {
     },
   };
 }
+
+// Disable pinch-to-zoom on mobile to prevent UI breakage
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
 
 export default function RootLayout({
   children,

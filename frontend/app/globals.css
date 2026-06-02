@@ -1323,3 +1323,18 @@ body.pj-drawer-open main {
     animation: none;
   }
 }
+
+/* ── Hide Google reCAPTCHA v3 floating badge ─────────────────────────── */
+/* The badge is redundant since we display a text notice in the contact form. */
+.grecaptcha-badge {
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* ── Admin panel z-index overrides ───────────────────────────────────── */
+.admin-login-wrap,
+.admin-layout {
+  position: relative;
+  z-index: 2;
+}
