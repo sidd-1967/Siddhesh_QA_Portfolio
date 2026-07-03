@@ -41,11 +41,20 @@ export async function generateMetadata(): Promise<Metadata> {
       url: AppConfig.app.url,
       siteName: name,
       locale: 'en_US',
+      images: [
+        {
+          url: '/og-image.png',
+          width: 1200,
+          height: 630,
+          alt: 'Siddhesh Govalkar | QA Engineer Portfolio',
+        }
+      ],
     },
     twitter: {
       card: 'summary_large_image',
       title: name,
       description: AppConfig.app.description,
+      images: ['/og-image.png'],
     },
   };
 }
