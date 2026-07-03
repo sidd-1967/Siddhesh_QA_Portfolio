@@ -8,7 +8,10 @@ import StarsBackground from '@/components/public/StarsBackground';
 export async function generateMetadata(): Promise<Metadata> {
   let name: string = AppConfig.app.name;
   try {
-    const res = await fetch(`${AppConfig.apiBaseUrl}/api/public/profile`, { next: { revalidate: 3600 } });
+    const res = await fetch(`${AppConfig.apiBaseUrl}/api/public/profile`, {
+      next: { revalidate: 3600 },
+      signal: AbortSignal.timeout(5000), // Don't hang if backend is down
+    });
     if (res.ok) {
       const data = await res.json();
       if (data.success && data.data?.fullName) {
