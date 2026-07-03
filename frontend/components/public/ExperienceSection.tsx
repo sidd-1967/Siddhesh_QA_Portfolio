@@ -40,6 +40,43 @@ function getDuration(startDate: string, endDate?: string | null, current?: boole
   return `${mos} mos`;
 }
 
+function getTotalExperience(experience: Experience[]): string {
+  if (!experience || experience.length === 0) return '';
+  
+  const intervals = experience.map(exp => {
+    const start = new Date(exp.startDate).getTime();
+    const end = exp.current || !exp.endDate ? new Date().getTime() : new Date(exp.endDate).getTime();
+    return { start: isNaN(start) ? 0 : start, end: isNaN(end) ? 0 : end };
+  }).filter(i => i.start > 0 && i.end > 0).sort((a, b) => a.start - b.start);
+
+  if (intervals.length === 0) return '';
+
+  const merged = [];
+  let current = intervals[0];
+  for (let i = 1; i < intervals.length; i++) {
+    if (intervals[i].start <= current.end) {
+      current.end = Math.max(current.end, intervals[i].end);
+    } else {
+      merged.push(current);
+      current = intervals[i];
+    }
+  }
+  merged.push(current);
+
+  let totalMonths = 0;
+  merged.forEach(interval => {
+    const start = new Date(interval.start);
+    const end = new Date(interval.end);
+    totalMonths += (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+  });
+
+  const yrs = Math.floor(totalMonths / 12);
+  const mos = totalMonths % 12;
+  if (yrs > 0 && mos > 0) return `(${yrs} yr ${mos} mos)`;
+  if (yrs > 0) return `(${yrs} yr)`;
+  return `(${mos} mos)`;
+}
+
 export default function ExperienceSection({ experience, config }: { experience: Experience[], config?: any }) {
   const ref = useRef<HTMLDivElement>(null);
   const [activeIdx, setActiveIdx] = useState(0);
@@ -59,7 +96,9 @@ export default function ExperienceSection({ experience, config }: { experience: 
     <section id="experience" className="section section-alt" ref={ref}>
       <div className="container">
         <div className="section-header">
-          <span className="section-tag fade-in">{config?.title || 'Professional Journey'}</span>
+          <span className="section-tag fade-in">
+            {config?.title || 'Professional Journey'} {getTotalExperience(experience)}
+          </span>
           <h2 className="section-title fade-in delay-1">{config?.subtitle || 'Work Experience'}</h2>
         </div>
 
