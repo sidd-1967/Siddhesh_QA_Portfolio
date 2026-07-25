@@ -2,9 +2,10 @@ import axios from 'axios';
 import { AppConfig } from '@/config/app.config';
 
 // ── Axios instance wired to the backend API ───────────────────────────
+// 45s timeout — Render's free tier can take 30-60s to wake from a cold start
 const api = axios.create({
   baseURL: AppConfig.apiBaseUrl,
-  timeout: 10000,
+  timeout: 45000,
   headers: { 'Content-Type': 'application/json' },
 });
 

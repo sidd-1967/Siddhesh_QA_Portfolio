@@ -12,12 +12,22 @@ import Footer from '@/components/public/Footer';
 // Revalidate every 10 seconds — faster propagation after admin updates (ISR)
 export const revalidate = 10;
 
+// Give the Vercel function enough room for two 45s attempts against a cold Render backend
+export const maxDuration = 120;
+
 async function fetchData<T>(fn: () => Promise<{ data: { data: T } }>): Promise<T | null> {
   try {
     const res = await fn();
     return res.data.data;
   } catch {
-    return null;
+    // Backend may still be waking up from a Render free-tier cold start — retry once
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+      const res = await fn();
+      return res.data.data;
+    } catch {
+      return null;
+    }
   }
 }
 
