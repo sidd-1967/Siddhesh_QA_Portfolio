@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState, useMemo } from 'react';
 import Image from 'next/image';
+import { sanitizeHtml } from '@/lib/sanitize';
 
 interface Project {
   _id: string;
@@ -22,8 +23,22 @@ interface Project {
   isCareerEngagement: boolean;
 }
 
+/** Escape HTML entities in plain text before inserting into HTML (prevents XSS). */
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+/**
+ * Wraps numeric metrics with a <strong> tag for visual emphasis.
+ * Input text is HTML-escaped first to prevent XSS injection via topMetric/achievement values.
+ */
 function highlightMetric(text: string) {
-  return text.replace(
+  return escapeHtml(text).replace(
     /(\d+[\d,]*%?|\d+\/\d+|↑\d+|↓\d+|zero|100%|0\s+P\d+)/gi,
     '<strong class="pj-metric-num">$1</strong>'
   );
@@ -308,7 +323,7 @@ export default function ProjectsSection({ projects, config }: { projects: Projec
 
                 <div className="pj2-drawer-section">
                   <h4 className="pj2-section-label">The Project</h4>
-                  <div className="pj2-drawer-desc ql-editor" dangerouslySetInnerHTML={{ __html: activeProject.description }} />
+                  <div className="pj2-drawer-desc ql-editor" dangerouslySetInnerHTML={{ __html: sanitizeHtml(activeProject.description) }} />
                 </div>
 
                 {activeProject.achievements && activeProject.achievements.length > 0 && (

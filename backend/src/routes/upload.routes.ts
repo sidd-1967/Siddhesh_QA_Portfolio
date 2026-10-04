@@ -3,6 +3,7 @@ import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import { authMiddleware } from '../middleware/auth.middleware';
+import { uploadRateLimiter } from '../middleware/rateLimiter';
 import { asyncHandler } from '../utils/asyncHandler';
 import { config } from '../config/config';
 
@@ -55,14 +56,15 @@ const uploadMiddleware = (req: any, res: any, next: any) => {
       }
       return res.status(400).json({ success: false, message: `Upload error: ${err.message}` });
     } else if (err) {
+      // SECURITY (VULN-09): Do not leak internal error details to the client
       console.error('[UPLOAD ERROR] General Error:', err);
-      return res.status(500).json({ success: false, message: err.message });
+      return res.status(400).json({ success: false, message: 'File upload failed. Ensure the file is a valid image (PNG, JPG, WEBP).' });
     }
     next();
   });
 };
 
-router.post('/', authMiddleware, uploadMiddleware, asyncHandler(async (req, res) => {
+router.post('/', authMiddleware, uploadRateLimiter, uploadMiddleware, asyncHandler(async (req, res) => {
   if (!config.cloudinary.cloudName || !config.cloudinary.apiKey || !config.cloudinary.apiSecret) {
     console.error('[UPLOAD ERROR] Cloudinary configuration missing');
     res.status(500).json({ success: false, message: 'Cloudinary configuration is missing' });

@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef } from 'react';
 import Image from 'next/image';
+import { sanitizeHtml } from '@/lib/sanitize';
 
 interface Profile {
   fullName: string;
@@ -51,7 +52,7 @@ export default function AboutSection({ profile, config, aboutStats }: { profile:
 
             <div 
               className="ab-bio-content ql-editor"
-              dangerouslySetInnerHTML={{ __html: profile?.bio || "" }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(profile?.bio) }}
             />
 
             <div className="ab-contact-list">

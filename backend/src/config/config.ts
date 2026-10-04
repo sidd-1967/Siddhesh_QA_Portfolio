@@ -1,6 +1,17 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+// ── Security guard: refuse to start with a weak/missing JWT secret ──────
+const rawJwtSecret = process.env.JWT_SECRET;
+if (process.env.NODE_ENV === 'production') {
+  if (!rawJwtSecret || rawJwtSecret.length < 32) {
+    throw new Error(
+      '[SECURITY] JWT_SECRET is missing or too short (< 32 chars). ' +
+      'Set a cryptographically random secret before starting in production.'
+    );
+  }
+}
+
 export const config = {
   // Server
   port: parseInt(process.env.PORT || '5000', 10),
@@ -10,7 +21,7 @@ export const config = {
   mongoUri: process.env.MONGO_URI || 'mongodb://localhost:27017/qa-portfolio',
 
   // JWT
-  jwtSecret: process.env.JWT_SECRET || 'change-me-in-production-use-64-char-random-string',
+  jwtSecret: rawJwtSecret || 'dev-only-insecure-jwt-secret-do-not-use-in-prod',
   jwtExpiry: process.env.JWT_EXPIRY || '7d',
 
   // reCAPTCHA

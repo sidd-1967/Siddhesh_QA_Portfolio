@@ -18,13 +18,16 @@ import profileAdminRoutes from './routes/profile.routes';
 import contactRoutes from './routes/contact.routes';
 import settingsRoutes from './routes/settings.routes';
 import uploadRoutes from './routes/upload.routes';
-import path from 'path';
 
 // Auth middleware for protected admin routes
 import { authMiddleware } from './middleware/auth.middleware';
 import { generalRateLimiter } from './middleware/rateLimiter';
 
 const app = express();
+
+// Trust the first proxy hop only (for accurate IP in rate limiters & logs).
+// This prevents X-Forwarded-For spoofing from untrusted sources.
+app.set('trust proxy', 1);
 
 // ── Security & Utility Middleware ──────────────────────────────────────
 app.use(helmet());
@@ -49,8 +52,8 @@ app.use(mongoSanitize());
 // General rate limiting
 app.use('/api/', generalRateLimiter);
 
-// Serve static files from public folder
-app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
+// NOTE: No local static /uploads served — all media goes to Cloudinary.
+// Serving a local /uploads directory would expose directory traversal risks.
 
 // ── Routes ─────────────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);

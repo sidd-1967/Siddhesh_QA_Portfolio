@@ -17,12 +17,16 @@ const skillValidation = [
 router.get('/', asyncHandler(async (req, res) => {
   const { page = 1, limit = 10, search = '' } = req.query;
   const skip = (Number(page) - 1) * Number(limit);
+
+  // Escape regex special chars to prevent ReDoS
+  const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   
   const query: any = {};
   if (search) {
+    const safeSearch = escapeRegex(String(search));
     query.$or = [
-      { name: { $regex: search, $options: 'i' } },
-      { category: { $regex: search, $options: 'i' } },
+      { name: { $regex: safeSearch, $options: 'i' } },
+      { category: { $regex: safeSearch, $options: 'i' } },
     ];
   }
 

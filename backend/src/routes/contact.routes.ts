@@ -56,16 +56,22 @@ router.post(
         auth: { user: config.email.user, pass: config.email.pass },
       });
 
+      // SECURITY (VULN-06): Strip CRLF to prevent SMTP header injection
+      const stripCRLF = (str: string) => str.replace(/[\r\n]/g, ' ').trim();
+      const safeName = stripCRLF(name);
+      const safeEmail = stripCRLF(email);
+      const safeSubject = stripCRLF(subject);
+
       // Get custom template from DB or use default
       const { Settings } = await import('../models/Settings');
       const settings = await Settings.findOne().select('emailTemplate');
       
-      let emailSubject = `[Portfolio Contact] ${subject}`;
+      let emailSubject = `[Portfolio Contact] ${safeSubject}`;
       let emailContent = `
         <h2>New Contact Form Submission</h2>
-        <p><strong>Name:</strong> ${name}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Subject:</strong> ${subject}</p>
+        <p><strong>Name:</strong> ${safeName}</p>
+        <p><strong>Email:</strong> ${safeEmail}</p>
+        <p><strong>Subject:</strong> ${safeSubject}</p>
         <p><strong>Message:</strong></p>
         <p>${message.replace(/\n/g, '<br>')}</p>
       `;
@@ -74,9 +80,9 @@ router.post(
         const { subject: templateSub, body: templateBody } = settings.emailTemplate;
         
         const placeholders: Record<string, string> = {
-          name,
-          email,
-          subject,
+          name: safeName,
+          email: safeEmail,
+          subject: safeSubject,
           message: message.replace(/\n/g, '<br>'),
           year: new Date().getFullYear().toString(),
         };
@@ -92,7 +98,7 @@ router.post(
       await transporter.sendMail({
         from: `"Portfolio Contact" <${config.email.from}>`,
         to: config.email.to,
-        replyTo: email,
+        replyTo: safeEmail,
         subject: emailSubject,
         html: emailContent,
       });

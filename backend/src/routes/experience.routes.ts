@@ -25,12 +25,16 @@ const experienceValidation = [
 router.get('/', asyncHandler(async (req, res) => {
   const { page = 1, limit = 10, search = '' } = req.query;
   const skip = (Number(page) - 1) * Number(limit);
+
+  // Escape regex special chars to prevent ReDoS
+  const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   
   const query: any = {};
   if (search) {
+    const safeSearch = escapeRegex(String(search));
     query.$or = [
-      { company: { $regex: search, $options: 'i' } },
-      { role: { $regex: search, $options: 'i' } },
+      { company: { $regex: safeSearch, $options: 'i' } },
+      { role: { $regex: safeSearch, $options: 'i' } },
     ];
   }
 

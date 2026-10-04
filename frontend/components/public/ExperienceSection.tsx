@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
+import { sanitizeHtml } from '@/lib/sanitize';
 
 interface Experience {
   _id: string;
@@ -179,7 +180,7 @@ export default function ExperienceSection({ experience, config }: { experience: 
                   {exp.description && (
                     <div
                       className="xp-desc ql-editor"
-                      dangerouslySetInnerHTML={{ __html: exp.description.replace(/&nbsp;|\u00A0/g, ' ') }}
+                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(exp.description.replace(/&nbsp;|\u00A0/g, ' ')) }}
                     />
                   )}
 
@@ -257,7 +258,7 @@ export default function ExperienceSection({ experience, config }: { experience: 
 
                     {/* Description */}
                     {exp.description && (
-                      <div className="xp-desc ql-editor" dangerouslySetInnerHTML={{ __html: exp.description.replace(/&nbsp;|\u00A0/g, ' ') }} />
+                      <div className="xp-desc ql-editor" dangerouslySetInnerHTML={{ __html: sanitizeHtml(exp.description.replace(/&nbsp;|\u00A0/g, ' ')) }} />
                     )}
 
                     {/* Tech Stack */}

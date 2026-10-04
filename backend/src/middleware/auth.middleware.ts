@@ -10,6 +10,7 @@ export interface AuthRequest extends Request {
 
 /**
  * Middleware: Verify JWT and attach userId / userRole to request.
+ * Also rejects tokens issued before a password change (VULN-05).
  */
 export const authMiddleware = async (
   req: AuthRequest,
@@ -29,13 +30,23 @@ export const authMiddleware = async (
     const decoded = jwt.verify(token, config.jwtSecret) as {
       userId: string;
       role: string;
+      iat: number;
     };
 
-    // Verify user still exists
-    const user = await User.findById(decoded.userId).select('_id role');
+    // Verify user still exists; also fetch passwordChangedAt for revocation check
+    const user = await User.findById(decoded.userId).select('+passwordChangedAt _id role');
     if (!user) {
       res.status(401).json({ success: false, message: 'User not found' });
       return;
+    }
+
+    // SECURITY (VULN-05): Reject token if password was changed after token was issued
+    if (user.passwordChangedAt) {
+      const changedAtSeconds = Math.floor(user.passwordChangedAt.getTime() / 1000);
+      if (decoded.iat < changedAtSeconds) {
+        res.status(401).json({ success: false, message: 'Session expired. Please log in again.' });
+        return;
+      }
     }
 
     req.userId = decoded.userId;
@@ -49,3 +60,4 @@ export const authMiddleware = async (
     res.status(401).json({ success: false, message: 'Invalid token' });
   }
 };
+

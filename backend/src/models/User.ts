@@ -6,6 +6,7 @@ export interface IUser extends Document {
   email: string;
   password: string;
   role: 'admin';
+  passwordChangedAt?: Date;
   comparePassword(candidate: string): Promise<boolean>;
 }
 
@@ -30,6 +31,11 @@ const UserSchema = new Schema<IUser>(
       enum: ['admin'],
       default: 'admin',
     },
+    // SECURITY: Track when password last changed to invalidate prior JWTs (VULN-05)
+    passwordChangedAt: {
+      type: Date,
+      select: false,
+    },
   },
   { timestamps: true }
 );
@@ -38,6 +44,10 @@ const UserSchema = new Schema<IUser>(
 UserSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   this.password = await bcrypt.hash(this.password, config.bcryptRounds);
+  // Record password change time (subtract 1s to account for JWT iat rounding)
+  if (!this.isNew) {
+    this.passwordChangedAt = new Date(Date.now() - 1000);
+  }
   next();
 });
 
@@ -47,3 +57,4 @@ UserSchema.methods.comparePassword = async function (candidate: string): Promise
 };
 
 export const User = mongoose.model<IUser>('User', UserSchema);
+

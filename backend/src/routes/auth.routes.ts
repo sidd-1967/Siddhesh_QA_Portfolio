@@ -34,15 +34,20 @@ router.post(
   handleValidationErrors,
   asyncHandler(async (req, res) => {
     const { email, password } = req.body;
+    const ip = req.ip || req.socket?.remoteAddress || 'unknown';
 
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
+      // SECURITY: Log failed attempt — user not found (use generic message to avoid user enumeration)
+      console.warn(`[SECURITY] Failed login attempt — unknown email — IP: ${ip} — ${new Date().toISOString()}`);
       res.status(401).json({ success: false, message: 'Invalid credentials' });
       return;
     }
 
     const match = await user.comparePassword(password);
     if (!match) {
+      // SECURITY: Log failed attempt — wrong password
+      console.warn(`[SECURITY] Failed login attempt — incorrect password — IP: ${ip} — ${new Date().toISOString()}`);
       res.status(401).json({ success: false, message: 'Invalid credentials' });
       return;
     }
@@ -53,6 +58,7 @@ router.post(
       { expiresIn: config.jwtExpiry } as jwt.SignOptions
     );
 
+    console.info(`[SECURITY] Successful login — IP: ${ip} — ${new Date().toISOString()}`);
     res.json({
       success: true,
       token,

@@ -25,13 +25,17 @@ const projectValidation = [
 router.get('/', asyncHandler(async (req, res) => {
   const { page = 1, limit = 10, search = '' } = req.query;
   const skip = (Number(page) - 1) * Number(limit);
+
+  // Escape regex special chars to prevent ReDoS
+  const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   
   const query: any = {};
   if (search) {
+    const safeSearch = escapeRegex(String(search));
     query.$or = [
-      { title: { $regex: search, $options: 'i' } },
-      { company: { $regex: search, $options: 'i' } },
-      { description: { $regex: search, $options: 'i' } },
+      { title: { $regex: safeSearch, $options: 'i' } },
+      { company: { $regex: safeSearch, $options: 'i' } },
+      { description: { $regex: safeSearch, $options: 'i' } },
     ];
   }
 
@@ -44,7 +48,14 @@ router.get('/', asyncHandler(async (req, res) => {
 }));
 
 router.post('/', projectValidation, handleValidationErrors, asyncHandler(async (req, res) => {
-  const project = await Project.create(req.body);
+  const { title, company, domain, period, description, topMetric, achievements,
+          techStack, githubUrl, liveUrl, testReportUrl, imageUrl, featured, order,
+          role, isCareerEngagement } = req.body;
+  const project = await Project.create({
+    title, company, domain, period, description, topMetric, achievements,
+    techStack, githubUrl, liveUrl, testReportUrl, imageUrl, featured, order,
+    role, isCareerEngagement,
+  });
   res.status(201).json({ success: true, data: project });
 }));
 
@@ -55,7 +66,16 @@ router.get('/:id', asyncHandler(async (req, res) => {
 }));
 
 router.put('/:id', projectValidation, handleValidationErrors, asyncHandler(async (req, res) => {
-  const project = await Project.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+  const { title, company, domain, period, description, topMetric, achievements,
+          techStack, githubUrl, liveUrl, testReportUrl, imageUrl, featured, order,
+          role, isCareerEngagement } = req.body;
+  const project = await Project.findByIdAndUpdate(
+    req.params.id,
+    { title, company, domain, period, description, topMetric, achievements,
+      techStack, githubUrl, liveUrl, testReportUrl, imageUrl, featured, order,
+      role, isCareerEngagement },
+    { new: true, runValidators: true }
+  );
   if (!project) { res.status(404).json({ success: false, message: 'Not found' }); return; }
   res.json({ success: true, data: project });
 }));
