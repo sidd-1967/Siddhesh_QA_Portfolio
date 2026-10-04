@@ -54,6 +54,8 @@ router.post(
         port: config.email.port,
         secure: config.email.port === 465,
         auth: { user: config.email.user, pass: config.email.pass },
+        connectionTimeout: 5000, // Fail fast if Render blocks the port
+        socketTimeout: 5000,
       });
 
       // SECURITY (VULN-06): Strip CRLF to prevent SMTP header injection
@@ -95,13 +97,22 @@ router.post(
         emailContent = replacePlaceholders(templateBody);
       }
 
-      await transporter.sendMail({
-        from: `"Portfolio Contact" <${config.email.from}>`,
-        to: config.email.to,
-        replyTo: safeEmail,
-        subject: emailSubject,
-        html: emailContent,
-      });
+      try {
+        await transporter.sendMail({
+          from: `"Portfolio Contact" <${config.email.from}>`,
+          to: config.email.to,
+          replyTo: safeEmail,
+          subject: emailSubject,
+          html: emailContent,
+        });
+      } catch (err: any) {
+        console.error('[SMTP ERROR]', err.message);
+        res.status(500).json({ 
+          success: false, 
+          message: 'Failed to send message. Please try again later or use the direct email link.' 
+        });
+        return;
+      }
     }
 
     res.json({
