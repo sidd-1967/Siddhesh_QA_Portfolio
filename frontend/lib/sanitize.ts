@@ -11,7 +11,7 @@
  * standard formatting tags (b, i, ul, ol, li, a, p, br, strong, em, h1-h6) intact.
  */
 
-import DOMPurify from 'dompurify';
+import DOMPurify from 'isomorphic-dompurify';
 
 const PURIFY_CONFIG = {
   // Strip script, style, iframe, form, and all event handlers
@@ -26,12 +26,9 @@ const PURIFY_CONFIG = {
 
 /**
  * Sanitize an HTML string before injecting into the DOM.
- * Returns an empty string if called server-side (SSR safety).
+ * isomorphic-dompurify works safely in both Node.js (SSR) and the browser.
  */
 export function sanitizeHtml(dirty: string | undefined | null): string {
   if (!dirty) return '';
-  // DOMPurify requires a browser DOM — return raw string on server (Next.js SSR).
-  // All components using this are 'use client', so this is a safety net only.
-  if (typeof window === 'undefined') return '';
-  return DOMPurify.sanitize(dirty, PURIFY_CONFIG);
+  return DOMPurify.sanitize(dirty, PURIFY_CONFIG) as string;
 }
