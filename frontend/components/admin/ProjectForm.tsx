@@ -19,6 +19,8 @@ interface Project {
   imageUrl?: string;
   featured: boolean;
   order: number;
+  role?: string;
+  isCareerEngagement: boolean;
 }
 
 interface Props {
@@ -44,6 +46,8 @@ export default function ProjectForm({ initialData, onSubmit, onCancel, loading }
     imageUrl: initialData?.imageUrl || '',
     featured: initialData?.featured || false,
     order: initialData?.order ?? 0,
+    role: initialData?.role || '',
+    isCareerEngagement: initialData?.isCareerEngagement || false,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -73,8 +77,99 @@ export default function ProjectForm({ initialData, onSubmit, onCancel, loading }
 
   return (
     <form onSubmit={handleSubmit} noValidate>
+      {/* ── Project Type Selector — TOP OF FORM ─────────────── */}
+      <div style={{
+        background: 'rgba(255,255,255,0.02)',
+        border: '1px solid rgba(255,255,255,0.07)',
+        borderRadius: '12px',
+        padding: '1.25rem',
+        marginBottom: '1.5rem',
+      }}>
+        <p style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: '0.85rem' }}>
+          Project Section *
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+          {/* Built & Tested option */}
+          <button
+            type="button"
+            onClick={() => setForm({ ...form, isCareerEngagement: false })}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              gap: '0.4rem',
+              padding: '1rem 1.1rem',
+              borderRadius: '10px',
+              border: !form.isCareerEngagement
+                ? '2px solid var(--color-accent)'
+                : '2px solid rgba(255,255,255,0.08)',
+              background: !form.isCareerEngagement
+                ? 'rgba(0,212,255,0.08)'
+                : 'rgba(255,255,255,0.02)',
+              cursor: 'pointer',
+              textAlign: 'left',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{
+                width: '10px', height: '10px', borderRadius: '50%',
+                background: !form.isCareerEngagement ? 'var(--color-accent)' : 'rgba(255,255,255,0.2)',
+                boxShadow: !form.isCareerEngagement ? '0 0 8px var(--color-accent)' : 'none',
+                flexShrink: 0,
+              }} />
+              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: !form.isCareerEngagement ? 'var(--color-accent)' : 'var(--color-text-secondary)' }}>
+                Built &amp; Tested
+              </span>
+            </span>
+            <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', lineHeight: 1.4, paddingLeft: '1.35rem' }}>
+              Full case study card with thumbnail, metric &amp; tags
+            </span>
+          </button>
+
+          {/* QA Career Engagement option */}
+          <button
+            type="button"
+            onClick={() => setForm({ ...form, isCareerEngagement: true })}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              gap: '0.4rem',
+              padding: '1rem 1.1rem',
+              borderRadius: '10px',
+              border: form.isCareerEngagement
+                ? '2px solid #9b8cf9'
+                : '2px solid rgba(255,255,255,0.08)',
+              background: form.isCareerEngagement
+                ? 'rgba(155,140,249,0.08)'
+                : 'rgba(255,255,255,0.02)',
+              cursor: 'pointer',
+              textAlign: 'left',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{
+                width: '10px', height: '10px', borderRadius: '50%',
+                background: form.isCareerEngagement ? '#9b8cf9' : 'rgba(255,255,255,0.2)',
+                boxShadow: form.isCareerEngagement ? '0 0 8px #9b8cf9' : 'none',
+                flexShrink: 0,
+              }} />
+              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: form.isCareerEngagement ? '#9b8cf9' : 'var(--color-text-secondary)' }}>
+                QA Career Engagement
+              </span>
+            </span>
+            <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', lineHeight: 1.4, paddingLeft: '1.35rem' }}>
+              Compact card with name, company &amp; role subtitle
+            </span>
+          </button>
+        </div>
+      </div>
+
       {/* ── Core Identity ──────────────────────────────────── */}
       <p className="proj-form-section-label">Core identity</p>
+
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
         <div className="form-group">
@@ -126,6 +221,22 @@ export default function ProjectForm({ initialData, onSubmit, onCancel, loading }
           />
         </div>
       </div>
+
+      {/* Role field — only relevant for Career Engagements */}
+      {form.isCareerEngagement && (
+        <div className="form-group" style={{ background: 'rgba(155,140,249,0.05)', border: '1px solid rgba(155,140,249,0.15)', borderRadius: '8px', padding: '0.85rem 1rem' }}>
+          <label className="form-label">
+            Role / Engagement Type
+            <small style={{ color: '#9b8cf9', marginLeft: '0.35rem' }}>← shown as subtitle on the compact card</small>
+          </label>
+          <input
+            className="form-input"
+            value={form.role}
+            onChange={(e) => setForm({ ...form, role: e.target.value })}
+            placeholder="Manual + Automation QA, Regression Testing…"
+          />
+        </div>
+      )}
 
       {/* ── Card highlights ─────────────────────────────────── */}
       <p className="proj-form-section-label" style={{ marginTop: '0.5rem' }}>Card highlights</p>
@@ -253,16 +364,18 @@ export default function ProjectForm({ initialData, onSubmit, onCancel, loading }
         </div>
       </div>
 
-      <div className="form-group" style={{ flexDirection: 'row', alignItems: 'center', gap: '0.75rem' }}>
-        <input
-          type="checkbox"
-          id="proj-featured"
-          checked={form.featured}
-          onChange={(e) => setForm({ ...form, featured: e.target.checked })}
-        />
-        <label htmlFor="proj-featured" className="form-label" style={{ margin: 0 }}>
-          Featured project <small style={{ color: 'var(--color-accent)' }}>(shows info border + dot on card)</small>
-        </label>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <div className="form-group" style={{ flexDirection: 'row', alignItems: 'center', gap: '0.75rem', marginBottom: 0 }}>
+          <input
+            type="checkbox"
+            id="proj-featured"
+            checked={form.featured}
+            onChange={(e) => setForm({ ...form, featured: e.target.checked })}
+          />
+          <label htmlFor="proj-featured" className="form-label" style={{ margin: 0 }}>
+            Featured project <small style={{ color: 'var(--color-accent)' }}>(cyan border + glowing dot on card)</small>
+          </label>
+        </div>
       </div>
 
       <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1.5rem' }}>

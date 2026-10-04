@@ -15,6 +15,8 @@ export interface IProject extends Document {
   imageUrl?: string;
   featured: boolean;
   order: number;
+  role?: string;               // subtitle shown on compact qa-card (e.g. "Manual + Automation QA")
+  isCareerEngagement: boolean; // false = case-card (Built & Tested), true = qa-card (Career Engagements)
 }
 
 const ProjectSchema = new Schema<IProject>(
@@ -33,6 +35,8 @@ const ProjectSchema = new Schema<IProject>(
     imageUrl: { type: String, trim: true },
     featured: { type: Boolean, default: false },
     order: { type: Number, default: 0 },
+    role: { type: String, trim: true, maxlength: 100 },
+    isCareerEngagement: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

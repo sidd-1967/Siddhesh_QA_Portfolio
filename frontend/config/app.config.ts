@@ -2,9 +2,18 @@
 // All environment variables and app-wide settings are managed here.
 // Never hard-code keys or URLs outside this file.
 
+const getApiBaseUrl = () => {
+  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+  if (typeof window !== 'undefined') {
+    // If accessed over LAN (e.g. 192.168.1.100), point to that same host on port 5000
+    return `${window.location.protocol}//${window.location.hostname}:5000`;
+  }
+  return 'http://localhost:5000';
+};
+
 export const AppConfig = {
   // Backend API base URL (set in .env.local)
-  apiBaseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
+  apiBaseUrl: getApiBaseUrl(),
 
   // App metadata
   app: {

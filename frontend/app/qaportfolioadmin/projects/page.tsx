@@ -14,6 +14,8 @@ interface Project {
   techStack: string[];
   featured: boolean;
   order: number;
+  role?: string;
+  isCareerEngagement: boolean;
 }
 
 // Strip HTML tags and decode entities
@@ -37,6 +39,20 @@ export default function AdminProjectsPage() {
       updateFn={(id, data) => adminAPI.updateProject(id, data)}
       deleteFn={(id) => adminAPI.deleteProject(id)}
       columns={[
+        { key: 'isCareerEngagement', label: 'Type', render: (r) => (
+          <span style={{
+            fontSize: '0.7rem',
+            fontWeight: 700,
+            padding: '3px 9px',
+            borderRadius: '5px',
+            letterSpacing: '0.03em',
+            background: r.isCareerEngagement ? 'rgba(155,140,249,0.15)' : 'rgba(0,212,255,0.12)',
+            color: r.isCareerEngagement ? '#9b8cf9' : 'var(--color-accent)',
+            border: `1px solid ${r.isCareerEngagement ? 'rgba(155,140,249,0.3)' : 'rgba(0,212,255,0.25)'}`,
+          }}>
+            {r.isCareerEngagement ? 'Career' : 'Case Study'}
+          </span>
+        )},
         { key: 'company', label: 'Company', render: (r) => r.company || '—' },
         { key: 'title', label: 'Hook (Title)' },
         { key: 'domain', label: 'Domain', render: (r) => r.domain || '—' },

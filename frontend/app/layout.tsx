@@ -4,6 +4,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { AppConfig } from '@/config/app.config';
 import StarsBackground from '@/components/public/StarsBackground';
+import LandscapeBlocker from '@/components/public/LandscapeBlocker';
 
 export async function generateMetadata(): Promise<Metadata> {
   let name: string = AppConfig.app.name;
@@ -83,6 +84,7 @@ export default function RootLayout({
         />
       </head>
       <body>
+        <LandscapeBlocker />
         <StarsBackground />
         {children}
       </body>
